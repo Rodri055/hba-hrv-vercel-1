@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/*.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "public/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    { "src": "/api/compute", "dest": "/api/compute.py" },
+    { "src": "/api/save",    "dest": "/api/save.py"    },
+    { "src": "/api/history", "dest": "/api/history.py" },
+    { "src": "/static/(.*)", "dest": "/public/$1"      },
+    { "src": "/(.*)",        "dest": "/public/index.html" }
+  ]
+}
