@@ -1,11 +1,3 @@
 {
-  "version": 2,
-  "rewrites": [
-    { "source": "/api/compute", "destination": "/api/compute.py" },
-    { "source": "/api/save",    "destination": "/api/save.py"    },
-    { "source": "/api/history", "destination": "/api/history.py" },
-    { "source": "/css/(.*)",    "destination": "/public/css/$1"  },
-    { "source": "/js/(.*)",     "destination": "/public/js/$1"   },
-    { "source": "/(.*)",        "destination": "/public/index.html" }
-  ]
+  "version": 2
 }
