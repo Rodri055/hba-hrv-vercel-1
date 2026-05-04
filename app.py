@@ -33,7 +33,9 @@ def _sb():
 
 @app.route("/")
 def index():
-    return send_from_directory(PUBLIC_DIR, "index.html")
+    import glob
+    files = glob.glob("/var/task/**/*", recursive=True)[:30]
+    return "<br>".join(files) + "<br>BASE:" + BASE_DIR + "<br>PUBLIC:" + PUBLIC_DIR
 
 @app.route("/css/<path:path>")
 def css(path):
