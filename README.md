@@ -1,5 +1,6 @@
 # HBA v2.0 — Deploy en Vercel (gratis, sin cortes)
 
+
 ## Estructura del proyecto
 
 ```
