@@ -1,47 +1,57 @@
 """
 HBA v2.0 — api/history.py
-Historial de sesiones por patient_id desde Supabase.
+Vercel Python: objeto `app` Flask como WSGI entry point.
+GET /api/history?patient_id=X — historial desde Supabase.
 """
 
+import sys, os
+sys.path.insert(0, os.path.dirname(__file__))
+
 import json
-import os
-import sys
+from flask import Flask, request
+
+app = Flask(__name__)
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
 SUPABASE_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
 
+CORS = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Content-Type": "application/json",
+}
 
-def handler(request, response):
-    response.headers["Access-Control-Allow-Origin"]  = "*"
-    response.headers["Access-Control-Allow-Methods"] = "GET, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "Content-Type"
-
+@app.route("/api/history", methods=["GET", "OPTIONS"])
+def history():
     if request.method == "OPTIONS":
-        response.status_code = 204
-        return response
+        return app.response_class("", status=204, headers=CORS)
 
-    patient_id = (request.args or {}).get("patient_id", "").strip()
+    patient_id = request.args.get("patient_id", "").strip()
     if not patient_id:
-        response.status_code = 400
-        return response.send(json.dumps({"error": "patient_id requerido"}))
+        return app.response_class(
+            json.dumps({"error": "patient_id requerido"}), status=400, headers=CORS
+        )
 
     if not SUPABASE_URL or not SUPABASE_KEY:
-        response.status_code = 200
-        response.headers["Content-Type"] = "application/json"
-        return response.send(json.dumps({"data": [], "warning": "Supabase no configurado"}))
+        return app.response_class(
+            json.dumps({"data": [], "warning": "Supabase no configurado"}),
+            status=200, headers=CORS
+        )
 
     try:
         from supabase import create_client
-        sb = create_client(SUPABASE_URL, SUPABASE_KEY)
+        sb  = create_client(SUPABASE_URL, SUPABASE_KEY)
         res = (sb.table("hba_sessions")
                .select("*")
                .eq("patient_id", patient_id)
                .order("timestamp_utc", desc=True)
                .limit(100)
                .execute())
-        response.status_code = 200
-        response.headers["Content-Type"] = "application/json"
-        return response.send(json.dumps({"data": res.data or []}))
+        return app.response_class(
+            json.dumps({"data": res.data or []}), status=200, headers=CORS
+        )
     except Exception as e:
-        response.status_code = 500
-        return response.send(json.dumps({"error": str(e)}))
+        return app.response_class(
+            json.dumps({"error": str(e)}), status=500, headers=CORS
+        )
