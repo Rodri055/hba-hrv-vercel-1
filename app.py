@@ -12,7 +12,10 @@ from datetime import datetime, timezone
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
 SUPABASE_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
 
-app = Flask(__name__, static_folder="public", static_url_path="")
+BASE_DIR    = os.path.dirname(os.path.abspath(__file__))
+PUBLIC_DIR  = os.path.join(BASE_DIR, "public")
+
+app = Flask(__name__)
 
 CORS = {
     "Access-Control-Allow-Origin": "*",
@@ -30,15 +33,15 @@ def _sb():
 
 @app.route("/")
 def index():
-    return send_from_directory("public", "index.html")
+    return send_from_directory(PUBLIC_DIR, "index.html")
 
 @app.route("/css/<path:path>")
 def css(path):
-    return send_from_directory("public/css", path)
+    return send_from_directory(os.path.join(PUBLIC_DIR, "css"), path)
 
 @app.route("/js/<path:path>")
 def js(path):
-    return send_from_directory("public/js", path)
+    return send_from_directory(os.path.join(PUBLIC_DIR, "js"), path)
 
 @app.route("/api/compute", methods=["POST", "OPTIONS"])
 def compute():
