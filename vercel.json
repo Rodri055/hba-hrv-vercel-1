@@ -1,12 +1,11 @@
 {
   "version": 2,
-  "routes": [
-    { "src": "/api/compute", "dest": "/api/compute.py" },
-    { "src": "/api/save",    "dest": "/api/save.py"    },
-    { "src": "/api/history", "dest": "/api/history.py" },
-    { "src": "/css/(.*)",    "dest": "/public/css/$1"  },
-    { "src": "/js/(.*)",     "dest": "/public/js/$1"   },
-    { "src": "/",            "dest": "/public/index.html" },
-    { "src": "/(.*)",        "dest": "/public/index.html" }
+  "rewrites": [
+    { "source": "/api/compute", "destination": "/api/compute.py" },
+    { "source": "/api/save",    "destination": "/api/save.py"    },
+    { "source": "/api/history", "destination": "/api/history.py" },
+    { "source": "/css/(.*)",    "destination": "/public/css/$1"  },
+    { "source": "/js/(.*)",     "destination": "/public/js/$1"   },
+    { "source": "/(.*)",        "destination": "/public/index.html" }
   ]
 }
