@@ -35,6 +35,11 @@ def _sb():
 def index():
     return send_from_directory(BASE_DIR, "index.html")
 
+@app.route("/static/manifest.json")
+def manifest():
+    return send_from_directory(os.path.join(BASE_DIR, "static"), "manifest.json",
+                               mimetype="application/manifest+json")
+
 @app.route("/api/compute", methods=["POST", "OPTIONS"])
 def compute():
     if request.method == "OPTIONS":
