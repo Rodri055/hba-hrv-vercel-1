@@ -2,16 +2,17 @@
 <html lang="es">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
   <title>HBA — Heart Beat Autonomic</title>
   <link rel="stylesheet" href="/static/css/style.css"/>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
-<!-- ═══════════════ PANTALLA 1: SENSOR ═══════════════ -->
+<!-- PANTALLA 1: SENSOR -->
 <div class="screen active" id="screenSensor">
-
   <header class="topbar">
     <div class="logo">
       <div class="logo-mark">
@@ -23,254 +24,123 @@
       </div>
     </div>
     <div class="topbar-right">
-      <div class="pill">
-        <span class="pill-dot" id="statusDot"></span>
-        <span id="statusText" style="font-family:var(--font-mono);font-size:13px">Listo</span>
-      </div>
+      <div class="pill"><span class="pill-dot" id="statusDot"></span><span id="statusText">Listo</span></div>
       <div class="timer-chip" id="chipTimer">00:00</div>
     </div>
   </header>
 
-  <div id="screenSensorInner" style="padding:32px;display:flex;flex-direction:column;gap:24px;max-width:1100px;margin:0 auto;width:100%">
-
-    <!-- Hero -->
-    <div class="hero">
-      <div class="hero-title">Análisis HRV</div>
-      <div class="hero-sub">Sistema Nervioso Autónomo · Diagnóstico Clínico</div>
+  <div class="screen-body">
+    <div class="section-label">Sensor</div>
+    <div class="sensor-scroll">
+      <div class="sensor-card active" data-sensor="camera_ppg"><span class="sensor-icon">📷</span><div class="sensor-name">Cámara PPG</div><div class="sensor-tag good">Recomendado</div></div>
+      <div class="sensor-card" data-sensor="polar_h10"><span class="sensor-icon">⚡</span><div class="sensor-name">Polar H10</div><div class="sensor-tag best">Más preciso</div></div>
+      <div class="sensor-card" data-sensor="face_rppg"><span class="sensor-icon">🫀</span><div class="sensor-name">rPPG Facial</div><div class="sensor-tag exp">Experimental</div></div>
+      <div class="sensor-card" data-sensor="vibration_scg"><span class="sensor-icon">📳</span><div class="sensor-name">Vibración</div><div class="sensor-tag exp">Experimental</div></div>
+      <div class="sensor-card" data-sensor="rr_upload"><span class="sensor-icon">📂</span><div class="sensor-name">Importar RR</div><div class="sensor-tag good">Sin sensor</div></div>
     </div>
 
-    <div class="sensor-layout">
-      <!-- Col izquierda -->
-      <div style="display:flex;flex-direction:column;gap:16px">
+    <div class="guide-box" id="guideBox">Apoyá el codo. Cubrí el lente y el flash con el dedo índice.</div>
 
-        <!-- Selector sensor -->
-        <div class="card">
-          <div class="card-head">
-            <span class="card-title">Sensor</span>
-          </div>
-          <div class="card-body" style="display:flex;flex-direction:column;gap:12px">
-            <div class="sensor-grid" style="grid-template-columns:1fr 1fr">
-              <div class="sensor-card active" data-sensor="camera_ppg">
-                <span class="sensor-icon">📷</span>
-                <div class="sensor-name">Cámara PPG</div>
-                <div class="sensor-desc">Dedo sobre lente</div>
-                <span class="sensor-badge good">Recomendado</span>
-              </div>
-              <div class="sensor-card" data-sensor="face_rppg">
-                <span class="sensor-icon">🫀</span>
-                <div class="sensor-name">rPPG Facial</div>
-                <div class="sensor-desc">Rostro frente a cámara</div>
-                <span class="sensor-badge exp">Experimental</span>
-              </div>
-              <div class="sensor-card" data-sensor="vibration_scg">
-                <span class="sensor-icon">📳</span>
-                <div class="sensor-name">Vibración SCG</div>
-                <div class="sensor-desc">Celular en esternón</div>
-                <span class="sensor-badge exp">Experimental</span>
-              </div>
-              <div class="sensor-card" data-sensor="polar_h10">
-                <span class="sensor-icon">⚡</span>
-                <div class="sensor-name">Polar H10</div>
-                <div class="sensor-desc">BLE · máxima precisión</div>
-                <span class="sensor-badge best">Más preciso</span>
-              </div>
-              <div class="sensor-card" data-sensor="rr_upload" style="grid-column:1/-1">
-                <span class="sensor-icon">📂</span>
-                <div class="sensor-name">Importar RR</div>
-                <div class="sensor-desc">CSV / JSON · Polar App, Kubios, Garmin</div>
-                <span class="sensor-badge good">Sin sensor</span>
-              </div>
-            </div>
+    <div id="rrUploadWrap" style="display:none">
+      <label class="file-drop"><input type="file" id="rrFile" accept=".csv,.json"><span id="rrFileLabel">↑ Tocá para cargar CSV / JSON</span></label>
+    </div>
 
-            <!-- RR upload -->
-            <div id="rrUploadWrap" style="display:none">
-              <label class="file-drop">
-                <input type="file" id="rrFile" accept=".csv,.json">
-                <span id="rrFileLabel">↑ Arrastrá o hacé clic — CSV / JSON</span>
-              </label>
-            </div>
+    <div class="section-label">Duración</div>
+    <div class="dur-row">
+      <button class="dur-btn" id="dur1" data-min="1" style="display:none">1 min</button>
+      <button class="dur-btn active" id="dur3" data-min="3">3 min</button>
+      <button class="dur-btn" id="dur5" data-min="5">5 min</button>
+    </div>
 
-            <!-- Torch -->
-            <div id="torchWrap" class="toggle-row">
-              <label class="toggle">
-                <input type="checkbox" id="torchToggle" checked>
-                <span class="toggle-track"></span>
-                <span class="toggle-thumb"></span>
-              </label>
-              <span>Flash automático</span>
-              <span class="hint" style="margin-left:auto">Desactivá si satura</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Duración -->
-        <div class="card">
-          <div class="card-head"><span class="card-title">Duración del test</span></div>
-          <div class="card-body">
-            <div class="dur-row">
-              <button class="dur-btn" id="dur1" data-min="1" style="display:none">1 min</button>
-              <button class="dur-btn active" id="dur3" data-min="3">3 min</button>
-              <button class="dur-btn" id="dur5" data-min="5">5 min</button>
-            </div>
-            <p class="hint" style="margin-top:10px" id="durHint">5 min: análisis espectral LF/HF más estable.</p>
-          </div>
-        </div>
-
-        <!-- Monitor señal -->
-        <div class="card">
-          <div class="card-head">
-            <span class="card-title">Monitor</span>
-            <div class="quality-wrap">
-              <span id="qualityText" style="font-family:var(--font-mono);font-size:12px;color:var(--text-3)">—</span>
-              <div class="quality-bar"><div class="quality-fill" id="qualityFill"></div></div>
-            </div>
-          </div>
-          <div class="card-body" style="padding:12px 18px">
-            <div id="freqWarning" class="freq-warn"></div>
-            <div class="signal-canvas-wrap">
-              <canvas id="signalChart"></canvas>
-            </div>
-          </div>
-        </div>
-
-        <!-- Acciones -->
-        <div class="cta-row">
-          <button class="btn btn-start" id="btnStart">▶ Iniciar</button>
-          <button class="btn btn-stop"  id="btnStop"  disabled>■ Detener</button>
-          <button class="btn btn-secondary" id="btnSave" disabled>Guardar</button>
-        </div>
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">Monitor</span>
+        <div class="quality-wrap"><span id="qualityText">—</span><div class="quality-bar"><div class="quality-fill" id="qualityFill"></div></div></div>
       </div>
-
-      <!-- Col derecha -->
-      <div style="display:flex;flex-direction:column;gap:16px">
-
-        <!-- Cámara -->
-        <div class="card" id="cameraCard">
-          <div class="card-head">
-            <span class="card-title" id="mediaTitle">Cámara PPG</span>
-          </div>
-          <div class="card-body">
-            <div class="video-wrap">
-              <video id="video" playsinline autoplay muted></video>
-              <canvas id="frameCanvas" style="display:none"></canvas>
-              <div class="video-overlay">
-                <div class="reticle"></div>
-                <div class="reticle-label" id="reticleText">Mantener estable</div>
-              </div>
-            </div>
-            <p class="hint" style="margin-top:10px" id="mediaNote">Apoyá el codo. Cubrí completamente el lente y el flash.</p>
-          </div>
-        </div>
-
-        <!-- Paciente -->
-        <div class="card">
-          <div class="card-head"><span class="card-title">Datos del paciente</span></div>
-          <div class="card-body">
-            <div class="form-2col">
-              <div class="field field-full">
-                <label class="field-label">ID / DNI / Código</label>
-                <input id="patientId" class="input" type="text" placeholder="Ej: A-102"/>
-              </div>
-              <div class="field">
-                <label class="field-label">Edad</label>
-                <input id="age" class="input" type="number" min="0" max="120" placeholder="Ej: 45"/>
-              </div>
-              <div class="field">
-                <label class="field-label">Sexo</label>
-                <select id="sex" class="select">
-                  <option value="">— Sin especificar —</option>
-                  <option value="M">Masculino</option>
-                  <option value="F">Femenino</option>
-                </select>
-              </div>
-              <div class="field field-full">
-                <label class="field-label">Comorbilidades</label>
-                <input id="comorbidities" class="input" type="text" placeholder="HTA, DM2, EPOC…"/>
-              </div>
-              <div class="field field-full">
-                <label class="field-label">Notas clínicas</label>
-                <textarea id="notes" class="textarea" placeholder="Postura, medicación, observaciones…"></textarea>
-              </div>
-            </div>
-          </div>
-        </div>
-
+      <div class="card-body" style="padding:10px 14px">
+        <div id="freqWarning" class="freq-warn"></div>
+        <div class="signal-canvas-wrap"><canvas id="signalChart"></canvas></div>
       </div>
     </div>
+
+    <div id="cameraCard">
+      <div class="section-label" id="mediaTitle">Cámara PPG</div>
+      <div class="video-wrap">
+        <video id="video" playsinline autoplay muted></video>
+        <canvas id="frameCanvas" style="display:none"></canvas>
+        <div class="video-overlay"><div class="reticle"></div><div class="reticle-label">Mantener estable</div></div>
+      </div>
+      <div id="torchWrap" class="toggle-row" style="margin-top:12px">
+        <label class="toggle"><input type="checkbox" id="torchToggle" checked><span class="toggle-track"></span><span class="toggle-thumb"></span></label>
+        <span>Flash automático</span>
+      </div>
+    </div>
+
+    <div class="section-label">Paciente</div>
+    <div class="card">
+      <div class="card-body">
+        <div class="form-col">
+          <div class="field"><label class="field-label">ID / DNI</label><input id="patientId" class="input" type="text" placeholder="Ej: A-102"/></div>
+          <div class="form-2col">
+            <div class="field"><label class="field-label">Edad</label><input id="age" class="input" type="number" min="0" max="120" placeholder="45"/></div>
+            <div class="field"><label class="field-label">Sexo</label><select id="sex" class="select"><option value="">—</option><option value="M">Masculino</option><option value="F">Femenino</option></select></div>
+          </div>
+          <div class="field"><label class="field-label">Comorbilidades</label><input id="comorbidities" class="input" type="text" placeholder="HTA, DM2…"/></div>
+          <div class="field"><label class="field-label">Notas</label><textarea id="notes" class="textarea" placeholder="Observaciones…"></textarea></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-grid">
+      <button class="btn btn-start" id="btnStart">▶ Iniciar</button>
+      <button class="btn btn-stop"  id="btnStop"  disabled>■ Detener</button>
+      <button class="btn btn-save"  id="btnSave"  disabled>Guardar</button>
+    </div>
+    <div style="height:32px"></div>
   </div>
 </div>
 
-<!-- ═══════════════ PANTALLA 2: RESULTADOS ═══════════════ -->
+<!-- PANTALLA 2: RESULTADOS -->
 <div class="screen" id="screenResults">
-
   <header class="topbar">
     <div class="logo">
-      <div class="logo-mark">
-        <svg viewBox="0 0 24 24"><polyline points="2 12 6 4 10 16 14 8 18 14 22 12"/></svg>
-      </div>
-      <div>
-        <div class="logo-text">HBA</div>
-        <div class="logo-sub">Heart Beat Autonomic</div>
-      </div>
+      <div class="logo-mark"><svg viewBox="0 0 24 24"><polyline points="2 12 6 4 10 16 14 8 18 14 22 12"/></svg></div>
+      <div><div class="logo-text">HBA</div><div class="logo-sub">Resultados</div></div>
     </div>
     <div class="topbar-right">
-      <button class="back-btn" id="btnBack">← Nueva medición</button>
-      <button class="btn btn-secondary" id="btnSave2" style="flex:none;padding:10px 20px;font-size:14px">Guardar</button>
+      <button class="back-btn" id="btnBack">← Volver</button>
+      <button class="btn-save-top" id="btnSave2">Guardar</button>
     </div>
   </header>
 
-  <div style="padding:32px;display:flex;flex-direction:column;gap:20px;max-width:1200px;margin:0 auto;width:100%">
-
-    <!-- Semáforo hero -->
+  <div class="screen-body">
     <div class="sem-hero funcional" id="semHero">
-      <div class="sem-icon-wrap" id="semIcon">●</div>
-      <div>
-        <div class="sem-label" id="semLabel">—</div>
-        <div class="sem-desc"  id="semDesc">Realizá una medición para ver el diagnóstico.</div>
-        <div class="norm-bar-wrap" id="normBarWrap" style="display:none">
-          <span id="normLow">—</span>
-          <div class="norm-bar"><div class="norm-marker" id="normMarker" style="left:50%"></div></div>
-          <span id="normHigh">—</span>
-        </div>
+      <div class="sem-top">
+        <div class="sem-icon-wrap" id="semIcon">●</div>
+        <div class="sem-rmssd-wrap"><div class="sem-rmssd-val" id="semRmssdVal">—</div><div class="sem-rmssd-lbl">RMSSD ms</div></div>
       </div>
-      <div class="sem-rmssd" id="semRmssdWrap">
-        <div class="sem-rmssd-val" id="semRmssdVal">—</div>
-        <div class="sem-rmssd-label">RMSSD ms</div>
+      <div class="sem-label" id="semLabel">—</div>
+      <div class="sem-desc"  id="semDesc">Realizá una medición para ver el diagnóstico.</div>
+      <div class="norm-bar-wrap" id="normBarWrap" style="display:none">
+        <span id="normLow" class="norm-edge">—</span>
+        <div class="norm-bar"><div class="norm-marker" id="normMarker" style="left:50%"></div></div>
+        <span id="normHigh" class="norm-edge">—</span>
       </div>
     </div>
 
-    <!-- Cargas -->
-    <div class="cargas-grid" id="cargasGrid">
-      <div class="empty" style="grid-column:1/-1">Esperando medición…</div>
-    </div>
+    <div class="section-label">Cargas autonómicas</div>
+    <div class="cargas-grid" id="cargasGrid"><div class="empty">Esperando…</div></div>
 
-    <!-- Métricas + Plan -->
-    <div class="results-grid">
-      <div class="card">
-        <div class="card-head"><span class="card-title">Métricas rápidas</span></div>
-        <div class="card-body">
-          <div class="metrics-grid" id="metricsGrid">
-            <div class="empty">—</div>
-          </div>
-        </div>
-      </div>
+    <div class="section-label">Métricas rápidas</div>
+    <div class="metrics-scroll" id="metricsGrid"><div class="empty">—</div></div>
 
-      <div class="card">
-        <div class="card-head"><span class="card-title">Plan de intervención</span></div>
-        <div class="card-body">
-          <div id="planList"><div class="empty">—</div></div>
-        </div>
-      </div>
-    </div>
+    <div class="section-label">Plan de intervención</div>
+    <div class="card"><div class="card-body"><div id="planList"><div class="empty">—</div></div></div></div>
 
-    <!-- Biomarcadores -->
-    <div class="card results-full">
-      <div class="card-head"><span class="card-title">Biomarcadores HRV</span></div>
-      <div id="bioTableWrap" style="overflow-x:auto">
-        <div class="empty">—</div>
-      </div>
-    </div>
+    <div class="section-label">Biomarcadores HRV</div>
+    <div class="card" style="overflow-x:auto"><div id="bioTableWrap"><div class="empty">—</div></div></div>
 
+    <div style="height:32px"></div>
   </div>
 </div>
 
