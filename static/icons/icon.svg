@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Fondo -->
+  <rect width="512" height="512" rx="112" fill="#080c18"/>
+  
+  <!-- Glow circle detrás -->
+  <circle cx="256" cy="256" r="180" fill="none" stroke="#00d4aa" stroke-width="1" opacity="0.15"/>
+  
+  <!-- Línea ECG -->
+  <polyline 
+    points="60,256 130,256 160,180 200,330 240,140 280,370 320,210 360,256 430,256 452,256"
+    fill="none" 
+    stroke="#00d4aa" 
+    stroke-width="22" 
+    stroke-linecap="round" 
+    stroke-linejoin="round"
+    opacity="0.95"
+  />
+
+  <!-- Texto HBA -->
+  <text 
+    x="256" y="430" 
+    font-family="Arial Black, Arial, sans-serif" 
+    font-weight="900"
+    font-size="72" 
+    fill="#f0f4ff" 
+    text-anchor="middle"
+    letter-spacing="-2"
+  >HBA</text>
+</svg>
