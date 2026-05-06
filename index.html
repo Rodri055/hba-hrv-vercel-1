@@ -15,7 +15,7 @@
 </head>
 <body>
 
-<!-- PANTALLA 1: SENSOR -->
+<!-- ══════ PANTALLA 1: SENSOR ══════ -->
 <div class="screen active" id="screenSensor">
   <header class="topbar">
     <div class="logo">
@@ -34,21 +34,55 @@
   </header>
 
   <div class="screen-body">
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-title">Análisis HRV</div>
+      <div class="hero-sub">Sistema Nervioso Autónomo · Diagnóstico Clínico</div>
+    </div>
+
+    <!-- Sensor -->
     <div class="section-label">Sensor</div>
     <div class="sensor-scroll">
-      <div class="sensor-card active" data-sensor="camera_ppg"><span class="sensor-icon">📷</span><div class="sensor-name">Cámara PPG</div><div class="sensor-tag good">Recomendado</div></div>
-      <div class="sensor-card" data-sensor="polar_h10"><span class="sensor-icon">⚡</span><div class="sensor-name">Polar H10</div><div class="sensor-tag best">Más preciso</div></div>
-      <div class="sensor-card" data-sensor="face_rppg"><span class="sensor-icon">🫀</span><div class="sensor-name">rPPG Facial</div><div class="sensor-tag exp">Experimental</div></div>
-      <div class="sensor-card" data-sensor="vibration_scg"><span class="sensor-icon">📳</span><div class="sensor-name">Vibración</div><div class="sensor-tag exp">Experimental</div></div>
-      <div class="sensor-card" data-sensor="rr_upload"><span class="sensor-icon">📂</span><div class="sensor-name">Importar RR</div><div class="sensor-tag good">Sin sensor</div></div>
+      <div class="sensor-card active" data-sensor="camera_ppg">
+        <span class="sensor-icon">📷</span>
+        <div class="sensor-name">Cámara PPG</div>
+        <div class="sensor-tag good">Recomendado</div>
+      </div>
+      <div class="sensor-card" data-sensor="polar_h10">
+        <span class="sensor-icon">⚡</span>
+        <div class="sensor-name">Polar H10</div>
+        <div class="sensor-tag best">Más preciso</div>
+      </div>
+      <div class="sensor-card" data-sensor="face_rppg">
+        <span class="sensor-icon">🫀</span>
+        <div class="sensor-name">rPPG Facial</div>
+        <div class="sensor-tag exp">Experimental</div>
+      </div>
+      <div class="sensor-card" data-sensor="vibration_scg">
+        <span class="sensor-icon">📳</span>
+        <div class="sensor-name">Vibración</div>
+        <div class="sensor-tag exp">Experimental</div>
+      </div>
+      <div class="sensor-card" data-sensor="rr_upload">
+        <span class="sensor-icon">📂</span>
+        <div class="sensor-name">Importar RR</div>
+        <div class="sensor-tag good">Sin sensor</div>
+      </div>
     </div>
 
-    <div class="guide-box" id="guideBox">Apoyá el codo. Cubrí el lente y el flash con el dedo índice.</div>
+    <div class="guide-box" id="guideBox">
+      Apoyá el codo. Cubrí el lente y el flash completamente con el dedo índice.
+    </div>
 
     <div id="rrUploadWrap" style="display:none">
-      <label class="file-drop"><input type="file" id="rrFile" accept=".csv,.json"><span id="rrFileLabel">↑ Tocá para cargar CSV / JSON</span></label>
+      <label class="file-drop">
+        <input type="file" id="rrFile" accept=".csv,.json">
+        <span id="rrFileLabel">↑ Tocá para cargar CSV / JSON</span>
+      </label>
     </div>
 
+    <!-- Duración -->
     <div class="section-label">Duración</div>
     <div class="dur-row">
       <button class="dur-btn" id="dur1" data-min="1" style="display:none">1 min</button>
@@ -56,60 +90,99 @@
       <button class="dur-btn" id="dur5" data-min="5">5 min</button>
     </div>
 
+    <!-- Monitor -->
     <div class="card">
       <div class="card-head">
         <span class="card-title">Monitor</span>
-        <div class="quality-wrap"><span id="qualityText">—</span><div class="quality-bar"><div class="quality-fill" id="qualityFill"></div></div></div>
+        <div class="quality-wrap">
+          <span id="qualityText">—</span>
+          <div class="quality-bar"><div class="quality-fill" id="qualityFill"></div></div>
+        </div>
       </div>
-      <div class="card-body" style="padding:10px 14px">
+      <div class="card-body" style="padding:10px 16px">
         <div id="freqWarning" class="freq-warn"></div>
         <div class="signal-canvas-wrap"><canvas id="signalChart"></canvas></div>
       </div>
     </div>
 
+    <!-- Cámara -->
     <div id="cameraCard">
       <div class="section-label" id="mediaTitle">Cámara PPG</div>
-      <div class="video-wrap">
+      <div class="video-wrap" style="margin-top:8px">
         <video id="video" playsinline autoplay muted></video>
         <canvas id="frameCanvas" style="display:none"></canvas>
-        <div class="video-overlay"><div class="reticle"></div><div class="reticle-label">Mantener estable</div></div>
+        <div class="video-overlay">
+          <div class="reticle"></div>
+          <div class="reticle-label">Mantener estable</div>
+        </div>
       </div>
       <div id="torchWrap" class="toggle-row" style="margin-top:12px">
-        <label class="toggle"><input type="checkbox" id="torchToggle" checked><span class="toggle-track"></span><span class="toggle-thumb"></span></label>
+        <label class="toggle">
+          <input type="checkbox" id="torchToggle" checked>
+          <span class="toggle-track"></span>
+          <span class="toggle-thumb"></span>
+        </label>
         <span>Flash automático</span>
       </div>
     </div>
 
+    <!-- Paciente -->
     <div class="section-label">Paciente</div>
     <div class="card">
       <div class="card-body">
         <div class="form-col">
-          <div class="field"><label class="field-label">ID / DNI</label><input id="patientId" class="input" type="text" placeholder="Ej: A-102"/></div>
-          <div class="form-2col">
-            <div class="field"><label class="field-label">Edad</label><input id="age" class="input" type="number" min="0" max="120" placeholder="45"/></div>
-            <div class="field"><label class="field-label">Sexo</label><select id="sex" class="select"><option value="">—</option><option value="M">Masculino</option><option value="F">Femenino</option></select></div>
+          <div class="field">
+            <label class="field-label">ID / DNI / Código</label>
+            <input id="patientId" class="input" type="text" placeholder="Ej: A-102"/>
           </div>
-          <div class="field"><label class="field-label">Comorbilidades</label><input id="comorbidities" class="input" type="text" placeholder="HTA, DM2…"/></div>
-          <div class="field"><label class="field-label">Notas</label><textarea id="notes" class="textarea" placeholder="Observaciones…"></textarea></div>
+          <div class="form-2col">
+            <div class="field">
+              <label class="field-label">Edad</label>
+              <input id="age" class="input" type="number" min="0" max="120" placeholder="45"/>
+            </div>
+            <div class="field">
+              <label class="field-label">Sexo</label>
+              <select id="sex" class="select">
+                <option value="">—</option>
+                <option value="M">Masculino</option>
+                <option value="F">Femenino</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label">Comorbilidades</label>
+            <input id="comorbidities" class="input" type="text" placeholder="HTA, DM2…"/>
+          </div>
+          <div class="field">
+            <label class="field-label">Notas</label>
+            <textarea id="notes" class="textarea" placeholder="Observaciones…"></textarea>
+          </div>
         </div>
       </div>
     </div>
 
+    <!-- Botones -->
     <div class="action-grid">
       <button class="btn btn-start" id="btnStart">▶ Iniciar</button>
       <button class="btn btn-stop"  id="btnStop"  disabled>■ Detener</button>
       <button class="btn btn-save"  id="btnSave"  disabled>Guardar</button>
     </div>
-    <div style="height:32px"></div>
+
+    <div style="height:24px"></div>
   </div>
 </div>
 
-<!-- PANTALLA 2: RESULTADOS -->
+<!-- ══════ PANTALLA 2: RESULTADOS ══════ -->
 <div class="screen" id="screenResults">
   <header class="topbar">
     <div class="logo">
-      <div class="logo-mark"><svg viewBox="0 0 24 24"><polyline points="2 12 6 4 10 16 14 8 18 14 22 12"/></svg></div>
-      <div><div class="logo-text">HBA</div><div class="logo-sub">Resultados</div></div>
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24"><polyline points="2 12 6 4 10 16 14 8 18 14 22 12"/></svg>
+      </div>
+      <div>
+        <div class="logo-text">HBA</div>
+        <div class="logo-sub">Resultados</div>
+      </div>
     </div>
     <div class="topbar-right">
       <button class="back-btn" id="btnBack">← Volver</button>
@@ -118,10 +191,15 @@
   </header>
 
   <div class="screen-body">
+
+    <!-- Semáforo -->
     <div class="sem-hero funcional" id="semHero">
       <div class="sem-top">
         <div class="sem-icon-wrap" id="semIcon">●</div>
-        <div class="sem-rmssd-wrap"><div class="sem-rmssd-val" id="semRmssdVal">—</div><div class="sem-rmssd-lbl">RMSSD ms</div></div>
+        <div class="sem-rmssd-wrap">
+          <div class="sem-rmssd-val" id="semRmssdVal">—</div>
+          <div class="sem-rmssd-lbl">RMSSD ms</div>
+        </div>
       </div>
       <div class="sem-label" id="semLabel">—</div>
       <div class="sem-desc"  id="semDesc">Realizá una medición para ver el diagnóstico.</div>
@@ -132,19 +210,33 @@
       </div>
     </div>
 
+    <!-- Cargas -->
     <div class="section-label">Cargas autonómicas</div>
-    <div class="cargas-grid" id="cargasGrid"><div class="empty">Esperando…</div></div>
+    <div class="cargas-grid" id="cargasGrid">
+      <div class="empty" style="grid-column:1/-1">Esperando medición…</div>
+    </div>
 
+    <!-- Métricas -->
     <div class="section-label">Métricas rápidas</div>
-    <div class="metrics-scroll" id="metricsGrid"><div class="empty">—</div></div>
+    <div class="metrics-scroll" id="metricsGrid">
+      <div class="empty">—</div>
+    </div>
 
+    <!-- Plan -->
     <div class="section-label">Plan de intervención</div>
-    <div class="card"><div class="card-body"><div id="planList"><div class="empty">—</div></div></div></div>
+    <div class="card">
+      <div class="card-body">
+        <div id="planList"><div class="empty">—</div></div>
+      </div>
+    </div>
 
+    <!-- Biomarcadores -->
     <div class="section-label">Biomarcadores HRV</div>
-    <div class="card" style="overflow-x:auto"><div id="bioTableWrap"><div class="empty">—</div></div></div>
+    <div class="card" style="overflow-x:auto">
+      <div id="bioTableWrap"><div class="empty">—</div></div>
+    </div>
 
-    <div style="height:32px"></div>
+    <div style="height:24px"></div>
   </div>
 </div>
 
