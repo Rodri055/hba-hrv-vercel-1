@@ -302,7 +302,7 @@ async function saveSession(){
   if(!G.lastMetrics)return; setStatus("Guardando…","warn");
   try{
     const res=await fetch("/api/save",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({patient_id:$("patientId").value||"",age:$("age").value||null,sex:$("sex").value||null,comorbidities:$("comorbidities").value||"",notes:$("notes").value||"",metrics:G.lastMetrics})});
-    const data=await res.json(); setStatus(data.ok?"Guardado ✓":"Error al guardar",data.ok?"live":"err");
+    const data=await res.json(); if(data.ok&&data.backend!=="none_configured"){setStatus("Guardado ✓ Supabase","live");}else if(data.backend==="none_configured"){setStatus("Supabase no configurado","err");alert("Para guardar configurá SUPABASE_URL y SUPABASE_ANON_KEY en Vercel → Environment Variables.");}else{setStatus("Error al guardar","err");alert("Error: "+(data.error||"desconocido"));}
   }catch{setStatus("Sin conexión","err");}
 }
 
