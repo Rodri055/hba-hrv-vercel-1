@@ -125,15 +125,65 @@ async function startSession(){
   G.ppgBuf=[];G.rrBuf=[];G.sigBuf=[];G.lastMetrics=null;G.totalSec=G.durationMin*60;
   setQuality(null);$("freqWarning").classList.remove("visible");
   try{
-    if(G.sensor==="rr_upload"){if(!G.rrBuf.length){alert("Cargá un archivo RR primero.");return;}await countdown("Analizando…","Procesando intervalos RR importados.","",3);G.running=true;setBtns(true);setStatus("Analizando…","live");await computeAndDisplay();G.running=false;setBtns(false);return;}
+    if(G.sensor==="rr_upload"){
+      if(!G.rrBuf.length){alert("Cargá un archivo RR primero.");return;}
+      await countdown("Analizando…","Procesando intervalos RR importados.","",3);
+      G.running=true;setBtns(true);setStatus("Analizando…","live");
+      await computeAndDisplay();G.running=false;setBtns(false);return;
+    }
+
+    if(G.sensor==="polar_h10"){
+      // CRÍTICO: requestDevice DEBE llamarse directamente desde el click
+      // sin ningún await previo (countdown rompería la cadena de gesto)
+      if(!navigator.bluetooth){
+        alert("Web Bluetooth no disponible.\n\nUsá Chrome o Edge en PC/Android.\nEn iPhone no está soportado.");
+        return;
+      }
+      setStatus("Esperando Bluetooth…","warn");
+      // Pedir dispositivo INMEDIATAMENTE — el popup del OS aparece aquí
+      G.bleDevice = await navigator.bluetooth.requestDevice({
+        filters:[{namePrefix:"Polar"},{namePrefix:"polar"}],
+        optionalServices:[HR_SVC],
+      });
+      // Solo DESPUÉS del popup mostramos el countdown
+      await countdown("Polar conectando","Ajustá la cinta y mantené el Polar H10 cerca.","No bloquees la pantalla.",3);
+      G.running=true;setBtns(true);setStatus("Conectando…","warn");
+      // Conectar GATT y suscribirse
+      const server = await G.bleDevice.gatt.connect();
+      setStatus("Polar conectado","live");
+      const svc  = await server.getPrimaryService(HR_SVC);
+      const ch   = await svc.getCharacteristic(HR_CHAR);
+      ch.addEventListener("characteristicvaluechanged", e=>{
+        if(!G.running)return;
+        const dv=e.target.value,flags=dv.getUint8(0),hasRR=(flags>>4)&0x01;
+        let offset=(flags&0x01)?3:2;
+        const hr=(flags&0x01)?dv.getUint16(1,true):dv.getUint8(1);
+        pushSig(hr);
+        if(hasRR){while(offset+1<dv.byteLength){const rr=dv.getUint16(offset,true)/1024.0*1000.0;offset+=2;if(rr>300&&rr<2200){G.rrBuf.push(rr);pushSig(rr);}}}
+      });
+      await ch.startNotifications();
+      G.rafH=requestAnimationFrame(renderChart);startTimer();
+      return;
+    }
+
+    // Resto de sensores — countdown primero está OK (no necesitan gesto)
     const meta=SENSOR_META[G.sensor];
-    await countdown("Preparación",meta.guide,G.sensor==="polar_h10"?"Aceptá el permiso Bluetooth.":"No bloquees la pantalla.",5);
+    await countdown("Preparación",meta.guide,"No bloquees la pantalla.",5);
     G.running=true;setBtns(true);setStatus("Midiendo…","live");
-    if(G.sensor==="polar_h10")await startPolarH10();
     if(G.sensor==="camera_ppg"||G.sensor==="face_rppg")await startCamera();
     if(G.sensor==="vibration_scg")startVibration();
     G.rafH=requestAnimationFrame(renderChart);startTimer();
-  }catch(err){G.running=false;setBtns(false);setStatus("Error","err");alert(`Error: ${err.message}`);}
+
+  }catch(err){
+    G.running=false;setBtns(false);
+    G.bleDevice=null;
+    setStatus("Error","err");
+    if(err.name==="NotFoundError"||err.message.includes("cancelled")){
+      setStatus("Cancelado","warn");
+    } else {
+      alert(`Error Bluetooth: ${err.message}\n\nVerificá que:\n• El Polar H10 esté encendido\n• Bluetooth del dispositivo esté activado\n• Usás Chrome o Edge`);
+    }
+  }
 }
 
 async function stopSession(auto=false){
