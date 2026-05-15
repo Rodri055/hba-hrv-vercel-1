@@ -97,24 +97,18 @@ def save():
         "semaphore_key":sem.get("key"),"semaphore_label":sem.get("label"),
         "stress_type":dash.get("stress_type"),
     }
-    sb=_sb()
-    if sb:
-        try: sb.table("hba_sessions").insert(row).execute(); backend="supabase"
-        except Exception as e: return app.response_class(json.dumps({"ok":False,"error":str(e)}),status=500,headers=CORS)
-    else: backend="none_configured"
-    return app.response_class(json.dumps({"ok":True,"backend":backend}),status=200,headers=CORS)
+    ok, backend = _sb_insert(row)
+    if not ok and backend != "none_configured":
+        return app.response_class(json.dumps({"ok":False,"error":backend}),status=500,headers=CORS)
+    return app.response_class(json.dumps({"ok":ok,"backend":backend}),status=200,headers=CORS)
 
 @app.route("/api/history", methods=["GET","OPTIONS"])
 def history():
     if request.method=="OPTIONS": return app.response_class("",status=204,headers=CORS)
     patient_id=request.args.get("patient_id","").strip()
     if not patient_id: return app.response_class(json.dumps({"error":"patient_id requerido"}),status=400,headers=CORS)
-    sb=_sb()
-    if not sb: return app.response_class(json.dumps({"data":[]}),status=200,headers=CORS)
-    try:
-        res=sb.table("hba_sessions").select("*").eq("patient_id",patient_id).order("timestamp_utc",desc=True).limit(100).execute()
-        return app.response_class(json.dumps({"data":res.data or []}),status=200,headers=CORS)
-    except Exception as e: return app.response_class(json.dumps({"error":str(e)}),status=500,headers=CORS)
+    data, backend = _sb_query(patient_id)
+    return app.response_class(json.dumps({"data": data or [], "backend": backend}),status=200,headers=CORS)
 
 if __name__=="__main__":
     app.run(debug=True)
