@@ -34,6 +34,21 @@
       <div class="hero-sub">Sistema Nervioso Autónomo · Diagnóstico Clínico</div>
     </div>
 
+    <div class="section-label">Paciente</div>
+    <div class="card">
+      <div class="card-body">
+        <div class="form-col">
+          <div class="field"><label class="field-label">ID / DNI / Código</label><input id="patientId" class="input" type="text" placeholder="Ej: A-102"/></div>
+          <div class="form-2col">
+            <div class="field"><label class="field-label">Edad</label><input id="age" class="input" type="number" min="0" max="120" placeholder="45"/></div>
+            <div class="field"><label class="field-label">Sexo</label><select id="sex" class="select"><option value="">—</option><option value="M">Masculino</option><option value="F">Femenino</option></select></div>
+          </div>
+          <div class="field"><label class="field-label">Comorbilidades</label><input id="comorbidities" class="input" type="text" placeholder="HTA, DM2…"/></div>
+          <div class="field"><label class="field-label">Notas</label><textarea id="notes" class="textarea" placeholder="Observaciones…"></textarea></div>
+        </div>
+      </div>
+    </div>
+
     <div class="section-label">Sensor</div>
     <div class="sensor-scroll">
       <div class="sensor-card active" data-sensor="camera_ppg"><span class="sensor-icon">📷</span><div class="sensor-name">Cámara PPG</div><div class="sensor-tag good">Recomendado</div></div>
@@ -80,20 +95,6 @@
       </div>
     </div>
 
-    <div class="section-label">Paciente</div>
-    <div class="card">
-      <div class="card-body">
-        <div class="form-col">
-          <div class="field"><label class="field-label">ID / DNI / Código</label><input id="patientId" class="input" type="text" placeholder="Ej: A-102"/></div>
-          <div class="form-2col">
-            <div class="field"><label class="field-label">Edad</label><input id="age" class="input" type="number" min="0" max="120" placeholder="45"/></div>
-            <div class="field"><label class="field-label">Sexo</label><select id="sex" class="select"><option value="">—</option><option value="M">Masculino</option><option value="F">Femenino</option></select></div>
-          </div>
-          <div class="field"><label class="field-label">Comorbilidades</label><input id="comorbidities" class="input" type="text" placeholder="HTA, DM2…"/></div>
-          <div class="field"><label class="field-label">Notas</label><textarea id="notes" class="textarea" placeholder="Observaciones…"></textarea></div>
-        </div>
-      </div>
-    </div>
 
     <div class="action-grid">
       <button class="btn btn-start" id="btnStart">▶ Iniciar</button>
