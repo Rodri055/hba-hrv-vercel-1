@@ -125,6 +125,18 @@ async function startSession(){
   G.ppgBuf=[];G.rrBuf=[];G.sigBuf=[];G.lastMetrics=null;G.totalSec=G.durationMin*60;
   setQuality(null);$("freqWarning").classList.remove("visible");
   try{
+    // Validar datos del paciente ANTES de iniciar el test
+    const pid = $("patientId").value.trim();
+    if(!pid){
+      alert("⚠ Ingresá el ID o nombre del paciente antes de iniciar.\n\nCompletá el campo ID / DNI / Código.");
+      $("patientId").focus();
+      return;
+    }
+    if(!$("age").value.trim()){
+      const ok = confirm("No ingresaste la edad del paciente.\nLa edad normaliza el RMSSD y es importante para el diagnóstico.\n¿Continuar igual?");
+      if(!ok){ $("age").focus(); return; }
+    }
+
     if(G.sensor==="rr_upload"){
       if(!G.rrBuf.length){alert("Cargá un archivo RR primero.");return;}
       await countdown("Analizando…","Procesando intervalos RR importados.","",3);
