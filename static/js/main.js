@@ -349,10 +349,36 @@ function renderRecs(recs){
 }
 
 async function saveSession(){
-  if(!G.lastMetrics)return; setStatus("Guardando…","warn");
+  if(!G.lastMetrics) return;
+
+  // Validar datos del paciente
+  const pid = $("patientId").value.trim();
+  const age = $("age").value.trim();
+  if(!pid){
+    alert("⚠ Ingresá el ID o nombre del paciente antes de guardar.\n\nCompletá el campo ID / DNI / Código en el formulario.");
+    showScreen("screenSensor");
+    $("patientId").focus();
+    return;
+  }
+  if(!age){
+    const ok = confirm("No ingresaste la edad.\nLa edad normaliza el RMSSD.\n¿Guardar igual?");
+    if(!ok) return;
+  }
+
+  setStatus("Guardando…","warn");
   try{
-    const res=await fetch("/api/save",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({patient_id:$("patientId").value||"",age:$("age").value||null,sex:$("sex").value||null,comorbidities:$("comorbidities").value||"",notes:$("notes").value||"",metrics:G.lastMetrics})});
-    const data=await res.json(); if(data.ok&&data.backend!=="none_configured"){setStatus("Guardado ✓ Supabase","live");}else if(data.backend==="none_configured"){setStatus("Supabase no configurado","err");alert("Para guardar configurá SUPABASE_URL y SUPABASE_ANON_KEY en Vercel → Environment Variables.");}else{setStatus("Error al guardar","err");alert("Error: "+(data.error||"desconocido"));}
+    const res=await fetch("/api/save",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({patient_id:pid,age:$("age").value||null,sex:$("sex").value||null,comorbidities:$("comorbidities").value||"",notes:$("notes").value||"",metrics:G.lastMetrics})});
+    const data=await res.json();
+    if(data.ok && data.backend==="supabase"){
+      setStatus("Guardado ✓","live");
+      alert("✅ Datos guardados correctamente en Supabase.\nPaciente: "+pid);
+    } else if(data.backend==="none_configured"){
+      setStatus("Supabase no configurado","err");
+      alert("Para guardar configurá SUPABASE_URL y SUPABASE_ANON_KEY en Vercel → Environment Variables.");
+    } else {
+      setStatus("Error al guardar","err");
+      alert("Error: "+(data.error||"desconocido"));
+    }
   }catch{setStatus("Sin conexión","err");}
 }
 
