@@ -5,11 +5,12 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
   <meta name="mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <title>HBA — Heart Beat Autonomic</title>
+  <title>HANNA·HRV — Heart Rate Variability</title>
   <link rel="manifest" href="/static/manifest.json"/>
   <link rel="apple-touch-icon" href="/static/icons/icon-512.png"/>
   <link rel="icon" type="image/png" href="/static/icons/icon-512.png"/>
-  <meta name="theme-color" content="#00e5ff"/>
+  <meta name="theme-color" content="#00D1B2"/>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="/static/css/style.css"/>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
@@ -21,14 +22,43 @@
   <!-- ── TOPBAR ── -->
   <header class="topbar" id="topbar">
     <div class="logo">
+      <!-- HANNA symbol: circle + ECG line -->
       <div class="logo-mark">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="2 12 6 4 10 16 14 8 18 14 22 12"/>
+        <svg viewBox="0 0 44 44" width="44" height="44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="22" cy="22" r="19" stroke="#00D1B2" stroke-width="1.5" opacity="0.6"/>
+          <circle cx="22" cy="22" r="19" stroke="url(#hannaSym)" stroke-width="1.5" opacity="0.4"/>
+          <defs>
+            <linearGradient id="hannaSym" x1="3" y1="22" x2="41" y2="22" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#00D1B2"/>
+              <stop offset="1" stop-color="#D4AF37"/>
+            </linearGradient>
+            <filter id="goldGlow">
+              <feGaussianBlur stdDeviation="1.2" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <!-- ECG / HRV waveform in gold -->
+          <polyline
+            points="4,22 10,22 13,16 16,28 19,10 22,34 25,14 28,22 31,22 34,22 40,22"
+            fill="none"
+            stroke="url(#hannaEcg)"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            filter="url(#goldGlow)"
+          />
+          <defs>
+            <linearGradient id="hannaEcg" x1="4" y1="22" x2="40" y2="22" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#00D1B2"/>
+              <stop offset="0.45" stop-color="#D4AF37"/>
+              <stop offset="1" stop-color="#00D1B2"/>
+            </linearGradient>
+          </defs>
         </svg>
       </div>
-      <div>
-        <div class="logo-text">HBA</div>
-        <div class="logo-sub" id="topbarSub">Heart Beat Autonomic</div>
+      <div class="logo-wordmark">
+        <div class="logo-text">HANNA<span class="logo-hrv">·HRV</span></div>
+        <div class="logo-sub" id="topbarSub">Heart Rate Variability</div>
       </div>
     </div>
     <div class="topbar-right">
@@ -51,7 +81,7 @@
 
         <div class="home-greeting">
           <span class="greeting-hi">Buenos días</span>
-          <span class="greeting-sub">Estado autonómico actual</span>
+          <span class="greeting-sub">The path of autonomic precision</span>
         </div>
 
         <!-- GAUGE SEMICIRCULAR -->
@@ -519,7 +549,7 @@
 
 // ── Tab labels ────────────────────────────────
 const TAB_LABELS = {
-  tabHome:"Heart Beat Autonomic", tabMedir:"Nueva medición",
+  tabHome:"Heart Rate Variability", tabMedir:"Nueva medición",
   tabResultados:"Resultados", tabHistorial:"Historial", tabRecs:"Recomendaciones"
 };
 
