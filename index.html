@@ -52,6 +52,7 @@
     <!-- ── TOPBAR ── -->
     <header class="topbar" id="topbar">
       <div class="logo">
+        <img class="logo-mark-img" src="/static/icons/logo-mark.png" alt="HANNA"/>
         <div class="logo-wordmark">
           <div class="logo-text">HANNA<span class="logo-hrv">.HRV</span></div>
           <div class="logo-sub" id="topbarSub">Heart Rate Variability</div>
@@ -76,38 +77,47 @@
         <div class="panel-body">
 
           <div class="home-greeting">
-            <span class="greeting-hi">Buenos días</span>
-            <span class="greeting-sub">The path of <strong>autonomic precision</strong></span>
+            <span class="greeting-hi">Buenos<br><em>días</em></span>
+            <span class="greeting-sub">The path of<br><strong>autonomic precision</strong></span>
           </div>
 
           <!-- GAUGE -->
           <div class="gauge-wrap">
+            <div class="gauge-halo"></div>
             <svg class="gauge-svg" viewBox="0 0 340 300" xmlns="http://www.w3.org/2000/svg">
               <defs>
                 <linearGradient id="gaugeGradient" x1="20%" y1="100%" x2="80%" y2="0%">
-                  <stop offset="0%"   stop-color="#FF5A54"/>
-                  <stop offset="18%"  stop-color="#FF7A30"/>
-                  <stop offset="42%"  stop-color="#2F80FF"/>
+                  <stop offset="0%"   stop-color="#FF7A30"/>
+                  <stop offset="16%"  stop-color="#FF9757"/>
+                  <stop offset="40%"  stop-color="#2F80FF"/>
                   <stop offset="70%"  stop-color="#1677FF"/>
                   <stop offset="100%" stop-color="#58C8FF"/>
                 </linearGradient>
+                <filter id="gaugeGlow" x="-60%" y="-60%" width="220%" height="220%">
+                  <feGaussianBlur stdDeviation="7" result="blur"/>
+                  <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+                <filter id="dotGlow" x="-200%" y="-200%" width="500%" height="500%">
+                  <feGaussianBlur stdDeviation="4" result="blur"/>
+                  <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
               </defs>
               <!-- Arco fondo -->
-              <path d="M 89.7 274.7 A 140 140 0 1 1 250.3 274.7" fill="none" stroke="rgba(17,24,39,0.06)" stroke-width="14" stroke-linecap="round"/>
-              <!-- Arco gradiente -->
-              <path d="M 89.7 274.7 A 140 140 0 1 1 250.3 274.7" fill="none" stroke="url(#gaugeGradient)" stroke-width="14" stroke-linecap="round" opacity="0.92"/>
+              <path d="M 89.7 274.7 A 140 140 0 1 1 250.3 274.7" fill="none" stroke="rgba(22,119,255,0.08)" stroke-width="16" stroke-linecap="round"/>
+              <!-- Arco gradiente con glow -->
+              <path d="M 89.7 274.7 A 140 140 0 1 1 250.3 274.7" fill="none" stroke="url(#gaugeGradient)" stroke-width="16" stroke-linecap="round" filter="url(#gaugeGlow)"/>
               <!-- Endpoints -->
-              <circle cx="89.7"  cy="274.7" r="6" fill="#FF7A30"/>
-              <circle cx="250.3" cy="274.7" r="6" fill="#58C8FF"/>
-              <!-- Zone labels -->
-              <text x="46"  y="255" class="gauge-zone-label" text-anchor="middle">MUY BAJO</text>
-              <text x="52"  y="118" class="gauge-zone-label" text-anchor="middle">BAJO</text>
-              <text x="170" y="30"  class="gauge-zone-label" text-anchor="middle">NORMAL</text>
-              <text x="288" y="118" class="gauge-zone-label" text-anchor="middle">ALTO</text>
+              <circle cx="89.7"  cy="274.7" r="7" fill="#FF7A30" filter="url(#dotGlow)"/>
+              <circle cx="250.3" cy="274.7" r="7" fill="#58C8FF" filter="url(#dotGlow)"/>
+              <!-- Zone label (única, arriba del arco) -->
+              <text x="170" y="18"  class="gauge-zone-label" text-anchor="middle">NORMAL</text>
+              <!-- Etiquetas extremos -->
+              <text x="60"  y="296" class="gauge-edge-label low"  text-anchor="start">BAJO</text>
+              <text x="280" y="296" class="gauge-edge-label high" text-anchor="end">ALTO</text>
             </svg>
             <div class="gauge-center">
               <div class="gauge-zone" id="gaugeZone">NORMAL</div>
-              <div class="gauge-icon"><i data-lucide="activity" style="width:20px;height:20px"></i></div>
+              <div class="gauge-icon"><i data-lucide="activity" style="width:22px;height:22px"></i></div>
               <div class="gauge-metric-label">RMSSD</div>
               <div class="gauge-value" id="gaugeValue">—</div>
               <div class="gauge-unit">ms</div>
@@ -120,27 +130,27 @@
           <!-- MÉTRICAS HOME -->
           <div class="home-metrics">
             <div class="hm-card">
-              <div class="hm-icon"><i data-lucide="heart-pulse" style="width:16px;height:16px"></i></div>
-              <div class="hm-val" id="hmFc">—</div>
+              <div class="hm-icon coral"><i data-lucide="heart-pulse" style="width:18px;height:18px"></i></div>
               <div class="hm-lbl">FC media</div>
+              <div class="hm-val" id="hmFc">—</div>
               <div class="hm-unit">bpm</div>
             </div>
             <div class="hm-card">
-              <div class="hm-icon"><i data-lucide="activity" style="width:16px;height:16px"></i></div>
-              <div class="hm-val" id="hmRmssd">—</div>
+              <div class="hm-icon blue"><i data-lucide="activity" style="width:18px;height:18px"></i></div>
               <div class="hm-lbl">RMSSD</div>
+              <div class="hm-val" id="hmRmssd">—</div>
               <div class="hm-unit">ms</div>
             </div>
             <div class="hm-card">
-              <div class="hm-icon"><i data-lucide="brain" style="width:16px;height:16px"></i></div>
-              <div class="hm-val" id="hmPns">—</div>
+              <div class="hm-icon blue"><i data-lucide="brain" style="width:18px;height:18px"></i></div>
               <div class="hm-lbl">PNS idx</div>
+              <div class="hm-val" id="hmPns">—</div>
               <div class="hm-unit"></div>
             </div>
             <div class="hm-card">
-              <div class="hm-icon"><i data-lucide="zap" style="width:16px;height:16px"></i></div>
-              <div class="hm-val" id="hmDfa">—</div>
+              <div class="hm-icon orange"><i data-lucide="zap" style="width:18px;height:18px"></i></div>
               <div class="hm-lbl">DFA α1</div>
+              <div class="hm-val" id="hmDfa">—</div>
               <div class="hm-unit"></div>
             </div>
           </div>
