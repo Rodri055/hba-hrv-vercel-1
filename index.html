@@ -9,8 +9,7 @@
   <link rel="manifest" href="/static/manifest.json"/>
   <link rel="apple-touch-icon" href="/static/icons/icon-512.png"/>
   <link rel="icon" type="image/png" href="/static/icons/icon-512.png"/>
-  <meta name="theme-color" content="#00D1B2"/>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <meta name="theme-color" content="#1677FF"/>
   <link rel="stylesheet" href="/static/css/style.css"/>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
@@ -19,494 +18,19 @@
 
 <div id="app">
 
-  <!-- ── TOPBAR ── -->
-  <header class="topbar" id="topbar">
-    <div class="logo">
-      <!-- HANNA symbol: circle + ECG line -->
-      <div class="logo-mark">
-        <svg viewBox="0 0 44 44" width="44" height="44" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="22" cy="22" r="19" stroke="#00D1B2" stroke-width="1.5" opacity="0.6"/>
-          <circle cx="22" cy="22" r="19" stroke="url(#hannaSym)" stroke-width="1.5" opacity="0.4"/>
-          <defs>
-            <linearGradient id="hannaSym" x1="3" y1="22" x2="41" y2="22" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#00D1B2"/>
-              <stop offset="1" stop-color="#D4AF37"/>
-            </linearGradient>
-            <filter id="goldGlow">
-              <feGaussianBlur stdDeviation="1.2" result="blur"/>
-              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-          </defs>
-          <!-- ECG / HRV waveform in gold -->
-          <polyline
-            points="4,22 10,22 13,16 16,28 19,10 22,34 25,14 28,22 31,22 34,22 40,22"
-            fill="none"
-            stroke="url(#hannaEcg)"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            filter="url(#goldGlow)"
-          />
-          <defs>
-            <linearGradient id="hannaEcg" x1="4" y1="22" x2="40" y2="22" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#00D1B2"/>
-              <stop offset="0.45" stop-color="#D4AF37"/>
-              <stop offset="1" stop-color="#00D1B2"/>
-            </linearGradient>
-          </defs>
-        </svg>
-      </div>
-      <div class="logo-wordmark">
-        <div class="logo-text">HANNA<span class="logo-hrv">·HRV</span></div>
-        <div class="logo-sub" id="topbarSub">Heart Rate Variability</div>
-      </div>
-    </div>
-    <div class="topbar-right">
-      <div class="pill">
-        <span class="pill-dot" id="statusDot"></span>
-        <span id="statusText">Listo</span>
-      </div>
-      <div class="timer-chip" id="chipTimer">00:00</div>
-    </div>
-  </header>
-
-  <!-- ── TAB CONTENT ── -->
-  <div id="tabContent">
-
-    <!-- ══════════════════════════════
-         HOME
-    ══════════════════════════════ -->
-    <div class="tab-panel active" id="tabHome">
-      <div class="panel-body">
-
-        <div class="home-greeting">
-          <span class="greeting-hi">Buenos días</span>
-          <span class="greeting-sub">The path of autonomic precision</span>
-        </div>
-
-        <!-- GAUGE SEMICIRCULAR -->
-        <div class="gauge-wrap">
-          <svg class="gauge-svg" viewBox="0 0 280 165" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%"   stop-color="#ef4444"/>
-                <stop offset="33%"  stop-color="#f59e0b"/>
-                <stop offset="66%"  stop-color="#3b82f6"/>
-                <stop offset="100%" stop-color="#00e5a0"/>
-              </linearGradient>
-              <filter id="needleGlow">
-                <feGaussianBlur stdDeviation="2" result="blur"/>
-                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
-            </defs>
-            <!-- Arco fondo -->
-            <path d="M 40 148 A 100 100 0 0 1 240 148" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="20" stroke-linecap="round"/>
-            <!-- Arco color gradiente -->
-            <path d="M 40 148 A 100 100 0 0 1 240 148" fill="none" stroke="url(#gaugeGradient)" stroke-width="20" stroke-linecap="round" opacity="0.85"/>
-            <!-- Zone labels -->
-            <text x="22"  y="105" font-family="'JetBrains Mono',monospace" font-size="8.5" fill="#3d4d6a" transform="rotate(-52,22,105)" text-anchor="middle">MUY</text>
-            <text x="26"  y="113" font-family="'JetBrains Mono',monospace" font-size="8.5" fill="#3d4d6a" transform="rotate(-52,26,113)" text-anchor="middle">BAJO</text>
-            <text x="82"  y="46"  font-family="'JetBrains Mono',monospace" font-size="8.5" fill="#3d4d6a" transform="rotate(-22,82,46)"  text-anchor="middle">BAJO</text>
-            <text x="155" y="36"  font-family="'JetBrains Mono',monospace" font-size="8.5" fill="#3d4d6a" text-anchor="middle">NORMAL</text>
-            <text x="222" y="56"  font-family="'JetBrains Mono',monospace" font-size="8.5" fill="#3d4d6a" transform="rotate(38,222,56)"  text-anchor="middle">ALTO</text>
-            <!-- Aguja -->
-            <g id="gaugeNeedle" style="transform-origin:140px 148px;transform:rotate(-85deg);transition:transform 1.2s cubic-bezier(0.34,1.2,0.64,1)">
-              <line x1="140" y1="148" x2="140" y2="62" stroke="rgba(255,255,255,0.9)" stroke-width="2.5" stroke-linecap="round" filter="url(#needleGlow)"/>
-              <circle cx="140" cy="148" r="10" fill="#1d2230" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
-              <circle cx="140" cy="148" r="4"  fill="white"/>
-            </g>
-            <!-- Valor -->
-            <text id="gaugeValue" x="140" y="128" font-family="'JetBrains Mono',monospace" font-size="28" font-weight="600" fill="white" text-anchor="middle" letter-spacing="-1">—</text>
-            <text x="140" y="143" font-family="'JetBrains Mono',monospace" font-size="9" fill="#3d4d6a" text-anchor="middle" letter-spacing="2">RMSSD ms</text>
-          </svg>
-          <div class="gauge-state" id="gaugeState">Sin medición</div>
-        </div>
-
-        <!-- MÉTRICAS HOME 4-grid -->
-        <div class="home-metrics">
-          <div class="hm-card">
-            <div class="hm-icon"><i data-lucide="heart-pulse" style="width:16px;height:16px"></i></div>
-            <div class="hm-val" id="hmFc">—</div>
-            <div class="hm-lbl">FC media</div>
-            <div class="hm-unit">bpm</div>
-          </div>
-          <div class="hm-card">
-            <div class="hm-icon"><i data-lucide="activity" style="width:16px;height:16px"></i></div>
-            <div class="hm-val" id="hmRmssd">—</div>
-            <div class="hm-lbl">RMSSD</div>
-            <div class="hm-unit">ms</div>
-          </div>
-          <div class="hm-card">
-            <div class="hm-icon"><i data-lucide="brain" style="width:16px;height:16px"></i></div>
-            <div class="hm-val" id="hmPns">—</div>
-            <div class="hm-lbl">PNS idx</div>
-            <div class="hm-unit"></div>
-          </div>
-          <div class="hm-card">
-            <div class="hm-icon"><i data-lucide="zap" style="width:16px;height:16px"></i></div>
-            <div class="hm-val" id="hmDfa">—</div>
-            <div class="hm-lbl">DFA α1</div>
-            <div class="hm-unit"></div>
-          </div>
-        </div>
-
-        <!-- BALANCE PNS/SNS -->
-        <div class="section-label">
-          <i data-lucide="git-branch" style="width:11px;height:11px"></i>
-          Balance autonómico
-        </div>
-        <div class="balance-card">
-          <div class="bal-col">
-            <div class="bal-label cyan">PNS</div>
-            <div class="bal-subtitle">Parasimpático</div>
-            <div class="bal-track">
-              <div class="bal-fill-pns" id="pnsFill" style="height:50%"></div>
-            </div>
-            <div class="bal-val cyan" id="pnsVal">—</div>
-          </div>
-          <div class="bal-divider">
-            <div class="bal-eq-icon"><i data-lucide="scale" style="width:18px;height:18px"></i></div>
-          </div>
-          <div class="bal-col">
-            <div class="bal-label red">SNS</div>
-            <div class="bal-subtitle">Simpático</div>
-            <div class="bal-track">
-              <div class="bal-fill-sns" id="snsFill" style="height:50%"></div>
-            </div>
-            <div class="bal-val red" id="snsVal">—</div>
-          </div>
-        </div>
-
-        <!-- ESTADO MINI -->
-        <div class="sem-mini" id="semMini" style="display:none">
-          <div class="sem-mini-icon" id="semMiniIcon">●</div>
-          <div class="sem-mini-body">
-            <div class="sem-mini-label" id="semMiniLabel">—</div>
-            <div class="sem-mini-desc"  id="semMiniDesc">—</div>
-          </div>
-        </div>
-
-        <!-- CTA -->
-        <button class="btn-cta" id="btnGoMedir">
-          <i data-lucide="play-circle" style="width:20px;height:20px"></i>
-          Nueva medición
-        </button>
-
-        <div style="height:16px"></div>
-      </div>
-    </div>
-
-    <!-- ══════════════════════════════
-         MEDIR
-    ══════════════════════════════ -->
-    <div class="tab-panel" id="tabMedir">
-      <div class="panel-body">
-
-        <div class="section-label">
-          <i data-lucide="user" style="width:11px;height:11px"></i>Paciente
-        </div>
-        <div class="card">
-          <div class="card-body">
-            <div class="form-col">
-              <div class="field">
-                <label class="field-label">ID / DNI / Código</label>
-                <input id="patientId" class="input" type="text" placeholder="Ej: A-102" autocomplete="off"/>
-              </div>
-              <div class="form-2col">
-                <div class="field">
-                  <label class="field-label">Edad</label>
-                  <input id="age" class="input" type="number" min="0" max="120" placeholder="45"/>
-                </div>
-                <div class="field">
-                  <label class="field-label">Sexo</label>
-                  <select id="sex" class="select">
-                    <option value="">—</option>
-                    <option value="M">Masculino</option>
-                    <option value="F">Femenino</option>
-                  </select>
-                </div>
-              </div>
-              <div class="field">
-                <label class="field-label">Comorbilidades</label>
-                <input id="comorbidities" class="input" type="text" placeholder="HTA, DM2…"/>
-              </div>
-              <div class="field">
-                <label class="field-label">Notas</label>
-                <textarea id="notes" class="textarea" placeholder="Observaciones clínicas…"></textarea>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="section-label">
-          <i data-lucide="activity" style="width:11px;height:11px"></i>Sensor
-        </div>
-        <div class="sensor-scroll">
-          <div class="sensor-card active" data-sensor="camera_ppg">
-            <span class="sensor-icon"><i data-lucide="camera" style="width:22px;height:22px;stroke:var(--cyan);stroke-width:1.8"></i></span>
-            <div class="sensor-name">Cámara PPG</div>
-            <div class="sensor-tag good">Recomendado</div>
-          </div>
-          <div class="sensor-card" data-sensor="polar_h10">
-            <span class="sensor-icon"><i data-lucide="bluetooth" style="width:22px;height:22px;stroke:var(--s-opt);stroke-width:1.8"></i></span>
-            <div class="sensor-name">Polar H10</div>
-            <div class="sensor-tag best">Más preciso</div>
-          </div>
-          <div class="sensor-card" data-sensor="face_rppg">
-            <span class="sensor-icon"><i data-lucide="scan-face" style="width:22px;height:22px;stroke:var(--s-com);stroke-width:1.8"></i></span>
-            <div class="sensor-name">rPPG Facial</div>
-            <div class="sensor-tag exp">Experimental</div>
-          </div>
-          <div class="sensor-card" data-sensor="vibration_scg">
-            <span class="sensor-icon"><i data-lucide="vibrate" style="width:22px;height:22px;stroke:var(--s-com);stroke-width:1.8"></i></span>
-            <div class="sensor-name">Vibración</div>
-            <div class="sensor-tag exp">Experimental</div>
-          </div>
-          <div class="sensor-card" data-sensor="rr_upload">
-            <span class="sensor-icon"><i data-lucide="upload" style="width:22px;height:22px;stroke:var(--s-fun);stroke-width:1.8"></i></span>
-            <div class="sensor-name">Importar RR</div>
-            <div class="sensor-tag good">Sin sensor</div>
-          </div>
-        </div>
-
-        <div class="guide-box" id="guideBox">Apoyá el codo. Cubrí el lente y el flash con el dedo índice.</div>
-
-        <div id="rrUploadWrap" style="display:none">
-          <label class="file-drop">
-            <input type="file" id="rrFile" accept=".csv,.json">
-            <i data-lucide="file-up" style="width:22px;height:22px;display:block;margin:0 auto 8px;opacity:0.5"></i>
-            <span id="rrFileLabel">Tocá para cargar CSV / JSON</span>
-          </label>
-        </div>
-
-        <div class="section-label">
-          <i data-lucide="timer" style="width:11px;height:11px"></i>Duración
-        </div>
-        <div class="dur-row">
-          <button class="dur-btn" id="dur1" data-min="1" style="display:none">1 min</button>
-          <button class="dur-btn active" id="dur3" data-min="3">3 min</button>
-          <button class="dur-btn" id="dur5" data-min="5">5 min</button>
-        </div>
-
-        <div class="card">
-          <div class="card-head">
-            <span class="card-title">Monitor de señal</span>
-            <div class="quality-wrap">
-              <span id="qualityText">—</span>
-              <div class="quality-bar"><div class="quality-fill" id="qualityFill"></div></div>
-            </div>
-          </div>
-          <div class="card-body" style="padding:10px 16px">
-            <div id="freqWarning" class="freq-warn"></div>
-            <div class="signal-canvas-wrap"><canvas id="signalChart"></canvas></div>
-          </div>
-        </div>
-
-        <div id="cameraCard">
-          <div class="section-label" id="mediaTitle" style="margin-bottom:8px">
-            <i data-lucide="video" style="width:11px;height:11px"></i>Cámara PPG
-          </div>
-          <div class="video-wrap">
-            <video id="video" playsinline autoplay muted></video>
-            <canvas id="frameCanvas" style="display:none"></canvas>
-            <div class="video-overlay">
-              <div class="reticle"></div>
-              <div class="reticle-label">Mantener estable</div>
-            </div>
-          </div>
-          <div id="torchWrap" class="toggle-row" style="margin-top:13px">
-            <label class="toggle">
-              <input type="checkbox" id="torchToggle" checked>
-              <span class="toggle-track"></span>
-              <span class="toggle-thumb"></span>
-            </label>
-            <span>Flash automático</span>
-          </div>
-        </div>
-
-        <div class="action-grid">
-          <button class="btn btn-start" id="btnStart">
-            <i data-lucide="play" style="width:18px;height:18px;fill:currentColor;stroke:none"></i>
-            Iniciar
-          </button>
-          <button class="btn btn-stop" id="btnStop" disabled>
-            <i data-lucide="square" style="width:16px;height:16px;fill:currentColor;stroke:none"></i>
-            Detener
-          </button>
-          <button class="btn btn-save" id="btnSave" disabled>
-            <i data-lucide="save" style="width:15px;height:15px"></i>
-            Guardar
-          </button>
-        </div>
-
-        <div style="height:16px"></div>
-      </div>
-    </div>
-
-    <!-- ══════════════════════════════
-         RESULTADOS
-    ══════════════════════════════ -->
-    <div class="tab-panel" id="tabResultados">
-      <div class="panel-body">
-
-        <div class="sem-hero funcional" id="semHero">
-          <div class="sem-top">
-            <div class="sem-icon-wrap" id="semIcon">●</div>
-            <div class="sem-rmssd-wrap">
-              <div class="sem-rmssd-val" id="semRmssdVal">—</div>
-              <div class="sem-rmssd-lbl">RMSSD ms</div>
-            </div>
-          </div>
-          <div class="sem-label" id="semLabel">—</div>
-          <div class="sem-desc"  id="semDesc">Realizá una medición para ver el diagnóstico.</div>
-          <div class="norm-bar-wrap" id="normBarWrap" style="display:none">
-            <span id="normLow"  class="norm-edge">—</span>
-            <div class="norm-bar"><div class="norm-marker" id="normMarker" style="left:50%"></div></div>
-            <span id="normHigh" class="norm-edge">—</span>
-          </div>
-        </div>
-
-        <div id="stressTypeWrap" style="display:none"></div>
-
-        <div class="section-label">
-          <i data-lucide="gauge" style="width:11px;height:11px"></i>Cargas autonómicas
-        </div>
-        <div class="cargas-grid" id="cargasGrid">
-          <div class="empty" style="grid-column:1/-1">Esperando medición…</div>
-        </div>
-
-        <div class="section-label">
-          <i data-lucide="bar-chart-2" style="width:11px;height:11px"></i>Métricas rápidas
-        </div>
-        <div class="metrics-scroll" id="metricsGrid">
-          <div class="empty">—</div>
-        </div>
-
-        <div class="section-label">
-          <i data-lucide="clipboard-list" style="width:11px;height:11px"></i>Plan de intervención
-        </div>
-        <div class="card">
-          <div class="card-body">
-            <div id="planList"><div class="empty">—</div></div>
-          </div>
-        </div>
-
-        <div class="section-label">
-          <i data-lucide="dna" style="width:11px;height:11px"></i>Biomarcadores HRV
-        </div>
-        <div class="card" style="overflow-x:auto">
-          <div id="bioTableWrap"><div class="empty">—</div></div>
-        </div>
-
-        <button class="btn btn-save-full" id="btnSave2">
-          <i data-lucide="save" style="width:16px;height:16px"></i>
-          Guardar sesión
-        </button>
-
-        <div style="height:16px"></div>
-      </div>
-    </div>
-
-    <!-- ══════════════════════════════
-         HISTORIAL
-    ══════════════════════════════ -->
-    <div class="tab-panel" id="tabHistorial">
-      <div class="panel-body">
-
-        <div class="hist-search-row">
-          <div class="hist-input-wrap">
-            <i data-lucide="search" style="width:15px;height:15px;color:var(--text-3);flex-shrink:0"></i>
-            <input id="histDni" class="hist-input" type="text" placeholder="Buscar por DNI / ID…"/>
-          </div>
-          <button class="btn-search" id="btnHistSearch">
-            <i data-lucide="arrow-right" style="width:16px;height:16px"></i>
-          </button>
-        </div>
-
-        <div class="range-row">
-          <button class="range-btn active" data-range="7">Semana</button>
-          <button class="range-btn" data-range="30">Mes</button>
-          <button class="range-btn" data-range="90">3 Meses</button>
-        </div>
-
-        <div class="chart-card">
-          <div class="chart-card-head">
-            <span class="chart-title">RMSSD</span>
-            <span class="chart-unit">ms · variabilidad cardíaca</span>
-          </div>
-          <div class="chart-wrap"><canvas id="chartRmssd"></canvas></div>
-        </div>
-
-        <div class="chart-card">
-          <div class="chart-card-head">
-            <span class="chart-title">Cargas autonómicas</span>
-            <span class="chart-unit">0–100</span>
-          </div>
-          <div class="chart-wrap"><canvas id="chartCargas"></canvas></div>
-        </div>
-
-        <div class="chart-card">
-          <div class="chart-card-head">
-            <span class="chart-title">Balance PNS / SNS</span>
-            <span class="chart-unit">% potencia espectral</span>
-          </div>
-          <div class="chart-wrap"><canvas id="chartBalance"></canvas></div>
-        </div>
-
-        <div class="section-label">
-          <i data-lucide="list" style="width:11px;height:11px"></i>Sesiones recientes
-        </div>
-        <div id="histList">
-          <div class="hist-empty">
-            <i data-lucide="clock" style="width:34px;height:34px;opacity:0.25;display:block;margin:0 auto 10px"></i>
-            <p>Buscá un paciente para ver su historial</p>
-          </div>
-        </div>
-
-        <div style="height:16px"></div>
-      </div>
-    </div>
-
-    <!-- ══════════════════════════════
-         RECOMENDACIONES
-    ══════════════════════════════ -->
-    <div class="tab-panel" id="tabRecs">
-      <div class="panel-body">
-
-        <div class="recs-header">
-          <div class="recs-title">Plan integral</div>
-          <div class="recs-sub">Basado en tu última medición HRV</div>
-        </div>
-
-        <div id="recsWrap">
-          <div class="hist-empty">
-            <i data-lucide="sparkles" style="width:38px;height:38px;opacity:0.25;display:block;margin:0 auto 12px"></i>
-            <p>Realizá una medición para ver<br>tus recomendaciones personalizadas</p>
-          </div>
-        </div>
-
-        <div style="height:16px"></div>
-      </div>
-    </div>
-
-  </div><!-- /tabContent -->
-
-  <!-- ══════════════════════════════
-       BOTTOM NAV
-  ══════════════════════════════ -->
+  <!-- ── SIDE NAV ── -->
   <nav class="bottom-nav" id="bottomNav">
+    <div class="side-brand">H</div>
     <button class="nav-btn active" data-tab="tabHome">
       <div class="nav-icon-wrap"><i data-lucide="home" style="width:21px;height:21px"></i></div>
-      <span>Home</span>
+      <span>Inicio</span>
     </button>
     <button class="nav-btn" data-tab="tabMedir">
       <div class="nav-icon-wrap"><i data-lucide="activity" style="width:21px;height:21px"></i></div>
       <span>Medir</span>
     </button>
-    <button class="nav-btn nav-center-btn" data-tab="tabResultados">
-      <div class="nav-center-pill">
-        <i data-lucide="bar-chart" style="width:22px;height:22px"></i>
-      </div>
+    <button class="nav-btn" data-tab="tabResultados">
+      <div class="nav-icon-wrap"><i data-lucide="bar-chart-2" style="width:21px;height:21px"></i></div>
       <span>Resultados</span>
     </button>
     <button class="nav-btn" data-tab="tabHistorial">
@@ -517,7 +41,443 @@
       <div class="nav-icon-wrap"><i data-lucide="sparkles" style="width:21px;height:21px"></i></div>
       <span>Plan</span>
     </button>
+    <button class="side-settings" type="button" aria-hidden="true">
+      <i data-lucide="settings" style="width:21px;height:21px"></i>
+      <span>Config</span>
+    </button>
   </nav>
+
+  <div class="main-col">
+
+    <!-- ── TOPBAR ── -->
+    <header class="topbar" id="topbar">
+      <div class="logo">
+        <div class="logo-wordmark">
+          <div class="logo-text">HANNA<span class="logo-hrv">.HRV</span></div>
+          <div class="logo-sub" id="topbarSub">Heart Rate Variability</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="pill">
+          <span class="pill-dot" id="statusDot"></span>
+          <span id="statusText">Listo</span>
+        </div>
+        <div class="timer-chip" id="chipTimer">00:00</div>
+      </div>
+    </header>
+
+    <!-- ── TAB CONTENT ── -->
+    <div id="tabContent">
+
+      <!-- ══════════════════════════════
+           HOME
+      ══════════════════════════════ -->
+      <div class="tab-panel active" id="tabHome">
+        <div class="panel-body">
+
+          <div class="home-greeting">
+            <span class="greeting-hi">Buenos días</span>
+            <span class="greeting-sub">The path of <strong>autonomic precision</strong></span>
+          </div>
+
+          <!-- GAUGE -->
+          <div class="gauge-wrap">
+            <svg class="gauge-svg" viewBox="0 0 340 300" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="gaugeGradient" x1="20%" y1="100%" x2="80%" y2="0%">
+                  <stop offset="0%"   stop-color="#FF5A54"/>
+                  <stop offset="18%"  stop-color="#FF7A30"/>
+                  <stop offset="42%"  stop-color="#2F80FF"/>
+                  <stop offset="70%"  stop-color="#1677FF"/>
+                  <stop offset="100%" stop-color="#58C8FF"/>
+                </linearGradient>
+              </defs>
+              <!-- Arco fondo -->
+              <path d="M 89.7 274.7 A 140 140 0 1 1 250.3 274.7" fill="none" stroke="rgba(17,24,39,0.06)" stroke-width="14" stroke-linecap="round"/>
+              <!-- Arco gradiente -->
+              <path d="M 89.7 274.7 A 140 140 0 1 1 250.3 274.7" fill="none" stroke="url(#gaugeGradient)" stroke-width="14" stroke-linecap="round" opacity="0.92"/>
+              <!-- Endpoints -->
+              <circle cx="89.7"  cy="274.7" r="6" fill="#FF7A30"/>
+              <circle cx="250.3" cy="274.7" r="6" fill="#58C8FF"/>
+              <!-- Zone labels -->
+              <text x="46"  y="255" class="gauge-zone-label" text-anchor="middle">MUY BAJO</text>
+              <text x="52"  y="118" class="gauge-zone-label" text-anchor="middle">BAJO</text>
+              <text x="170" y="30"  class="gauge-zone-label" text-anchor="middle">NORMAL</text>
+              <text x="288" y="118" class="gauge-zone-label" text-anchor="middle">ALTO</text>
+            </svg>
+            <div class="gauge-center">
+              <div class="gauge-zone" id="gaugeZone">NORMAL</div>
+              <div class="gauge-icon"><i data-lucide="activity" style="width:20px;height:20px"></i></div>
+              <div class="gauge-metric-label">RMSSD</div>
+              <div class="gauge-value" id="gaugeValue">—</div>
+              <div class="gauge-unit">ms</div>
+              <div class="gauge-divider"></div>
+              <div class="gauge-state" id="gaugeState">Sin medición</div>
+              <div class="gauge-desc" id="gaugeDesc">Realizá una nueva medición para obtener tu estado actual</div>
+            </div>
+          </div>
+
+          <!-- MÉTRICAS HOME -->
+          <div class="home-metrics">
+            <div class="hm-card">
+              <div class="hm-icon"><i data-lucide="heart-pulse" style="width:16px;height:16px"></i></div>
+              <div class="hm-val" id="hmFc">—</div>
+              <div class="hm-lbl">FC media</div>
+              <div class="hm-unit">bpm</div>
+            </div>
+            <div class="hm-card">
+              <div class="hm-icon"><i data-lucide="activity" style="width:16px;height:16px"></i></div>
+              <div class="hm-val" id="hmRmssd">—</div>
+              <div class="hm-lbl">RMSSD</div>
+              <div class="hm-unit">ms</div>
+            </div>
+            <div class="hm-card">
+              <div class="hm-icon"><i data-lucide="brain" style="width:16px;height:16px"></i></div>
+              <div class="hm-val" id="hmPns">—</div>
+              <div class="hm-lbl">PNS idx</div>
+              <div class="hm-unit"></div>
+            </div>
+            <div class="hm-card">
+              <div class="hm-icon"><i data-lucide="zap" style="width:16px;height:16px"></i></div>
+              <div class="hm-val" id="hmDfa">—</div>
+              <div class="hm-lbl">DFA α1</div>
+              <div class="hm-unit"></div>
+            </div>
+          </div>
+
+          <!-- BALANCE PNS/SNS -->
+          <div class="section-label">
+            <i data-lucide="git-branch" style="width:11px;height:11px"></i>
+            Balance autonómico
+          </div>
+          <div class="balance-card">
+            <div class="bal-col">
+              <div class="bal-label cyan">PNS</div>
+              <div class="bal-subtitle">Parasimpático</div>
+              <div class="bal-track">
+                <div class="bal-fill-pns" id="pnsFill" style="width:50%"></div>
+              </div>
+              <div class="bal-val cyan" id="pnsVal">—</div>
+            </div>
+            <div class="bal-divider">
+              <i data-lucide="scale" style="width:18px;height:18px"></i>
+            </div>
+            <div class="bal-col">
+              <div class="bal-label red">SNS</div>
+              <div class="bal-subtitle">Simpático</div>
+              <div class="bal-track">
+                <div class="bal-fill-sns" id="snsFill" style="width:50%"></div>
+              </div>
+              <div class="bal-val red" id="snsVal">—</div>
+            </div>
+          </div>
+
+          <!-- ESTADO MINI -->
+          <div class="sem-mini" id="semMini" style="display:none">
+            <div class="sem-mini-icon" id="semMiniIcon">●</div>
+            <div class="sem-mini-body">
+              <div class="sem-mini-label" id="semMiniLabel">—</div>
+              <div class="sem-mini-desc"  id="semMiniDesc">—</div>
+            </div>
+          </div>
+
+          <!-- CTA -->
+          <button class="btn-cta" id="btnGoMedir">
+            <i data-lucide="play-circle" style="width:20px;height:20px"></i>
+            Nueva medición
+          </button>
+
+          <div style="height:16px"></div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════
+           MEDIR
+      ══════════════════════════════ -->
+      <div class="tab-panel" id="tabMedir">
+        <div class="panel-body">
+
+          <div class="section-label">
+            <i data-lucide="user" style="width:11px;height:11px"></i>Paciente
+          </div>
+          <div class="form-col">
+            <div class="field">
+              <label class="field-label">ID / DNI / Código</label>
+              <input id="patientId" class="input" type="text" placeholder="Ej: A-102" autocomplete="off"/>
+            </div>
+            <div class="form-2col">
+              <div class="field">
+                <label class="field-label">Edad</label>
+                <input id="age" class="input" type="number" min="0" max="120" placeholder="45"/>
+              </div>
+              <div class="field">
+                <label class="field-label">Sexo</label>
+                <select id="sex" class="select">
+                  <option value="">—</option>
+                  <option value="M">Masculino</option>
+                  <option value="F">Femenino</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label class="field-label">Comorbilidades</label>
+              <input id="comorbidities" class="input" type="text" placeholder="HTA, DM2…"/>
+            </div>
+            <div class="field">
+              <label class="field-label">Notas</label>
+              <textarea id="notes" class="textarea" placeholder="Observaciones clínicas…"></textarea>
+            </div>
+          </div>
+
+          <div class="section-label">
+            <i data-lucide="activity" style="width:11px;height:11px"></i>Sensor
+          </div>
+          <div class="sensor-scroll">
+            <div class="sensor-card active" data-sensor="camera_ppg">
+              <span class="sensor-icon"><i data-lucide="camera" style="width:22px;height:22px;stroke:var(--blue-1);stroke-width:1.6"></i></span>
+              <div class="sensor-name">Cámara PPG</div>
+              <div class="sensor-tag good">Recomendado</div>
+            </div>
+            <div class="sensor-card" data-sensor="polar_h10">
+              <span class="sensor-icon"><i data-lucide="bluetooth" style="width:22px;height:22px;stroke:var(--s-opt);stroke-width:1.6"></i></span>
+              <div class="sensor-name">Polar H10</div>
+              <div class="sensor-tag best">Más preciso</div>
+            </div>
+            <div class="sensor-card" data-sensor="face_rppg">
+              <span class="sensor-icon"><i data-lucide="scan-face" style="width:22px;height:22px;stroke:var(--text-2);stroke-width:1.6"></i></span>
+              <div class="sensor-name">rPPG Facial</div>
+              <div class="sensor-tag exp">Experimental</div>
+            </div>
+            <div class="sensor-card" data-sensor="vibration_scg">
+              <span class="sensor-icon"><i data-lucide="vibrate" style="width:22px;height:22px;stroke:var(--text-2);stroke-width:1.6"></i></span>
+              <div class="sensor-name">Vibración</div>
+              <div class="sensor-tag exp">Experimental</div>
+            </div>
+            <div class="sensor-card" data-sensor="rr_upload">
+              <span class="sensor-icon"><i data-lucide="upload" style="width:22px;height:22px;stroke:var(--blue-2);stroke-width:1.6"></i></span>
+              <div class="sensor-name">Importar RR</div>
+              <div class="sensor-tag good">Sin sensor</div>
+            </div>
+          </div>
+
+          <div class="guide-box" id="guideBox">Apoyá el codo. Cubrí el lente y el flash con el dedo índice.</div>
+
+          <div id="rrUploadWrap" style="display:none">
+            <label class="file-drop">
+              <input type="file" id="rrFile" accept=".csv,.json">
+              <i data-lucide="file-up" style="width:22px;height:22px;display:block;margin:0 auto 8px;opacity:0.5"></i>
+              <span id="rrFileLabel">Tocá para cargar CSV / JSON</span>
+            </label>
+          </div>
+
+          <div class="section-label">
+            <i data-lucide="timer" style="width:11px;height:11px"></i>Duración
+          </div>
+          <div class="dur-row">
+            <button class="dur-btn" id="dur1" data-min="1" style="display:none">1 min</button>
+            <button class="dur-btn active" id="dur3" data-min="3">3 min</button>
+            <button class="dur-btn" id="dur5" data-min="5">5 min</button>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title">Monitor de señal</span>
+              <div class="quality-wrap">
+                <span id="qualityText">—</span>
+                <div class="quality-bar"><div class="quality-fill" id="qualityFill"></div></div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div id="freqWarning" class="freq-warn"></div>
+              <div class="signal-canvas-wrap"><canvas id="signalChart"></canvas></div>
+            </div>
+          </div>
+
+          <div id="cameraCard">
+            <div class="section-label" id="mediaTitle" style="margin-bottom:8px">
+              <i data-lucide="video" style="width:11px;height:11px"></i>Cámara PPG
+            </div>
+            <div class="video-wrap">
+              <video id="video" playsinline autoplay muted></video>
+              <canvas id="frameCanvas" style="display:none"></canvas>
+              <div class="video-overlay">
+                <div class="reticle"></div>
+                <div class="reticle-label">Mantener estable</div>
+              </div>
+            </div>
+            <div id="torchWrap" class="toggle-row" style="margin-top:13px">
+              <label class="toggle">
+                <input type="checkbox" id="torchToggle" checked>
+                <span class="toggle-track"></span>
+                <span class="toggle-thumb"></span>
+              </label>
+              <span>Flash automático</span>
+            </div>
+          </div>
+
+          <div class="action-grid">
+            <button class="btn btn-start" id="btnStart">
+              <i data-lucide="play" style="width:18px;height:18px;fill:currentColor;stroke:none"></i>
+              Iniciar
+            </button>
+            <button class="btn btn-stop" id="btnStop" disabled>
+              <i data-lucide="square" style="width:16px;height:16px;fill:currentColor;stroke:none"></i>
+              Detener
+            </button>
+            <button class="btn btn-save" id="btnSave" disabled>
+              <i data-lucide="save" style="width:15px;height:15px"></i>
+              Guardar
+            </button>
+          </div>
+
+          <div style="height:16px"></div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════
+           RESULTADOS
+      ══════════════════════════════ -->
+      <div class="tab-panel" id="tabResultados">
+        <div class="panel-body">
+
+          <div class="sem-hero funcional" id="semHero">
+            <div class="sem-top">
+              <div class="sem-icon-wrap" id="semIcon">●</div>
+              <div class="sem-rmssd-wrap">
+                <div class="sem-rmssd-val" id="semRmssdVal">—</div>
+                <div class="sem-rmssd-lbl">RMSSD ms</div>
+              </div>
+            </div>
+            <div class="sem-label" id="semLabel">—</div>
+            <div class="sem-desc"  id="semDesc">Realizá una medición para ver el diagnóstico.</div>
+            <div class="norm-bar-wrap" id="normBarWrap" style="display:none">
+              <span id="normLow"  class="norm-edge">—</span>
+              <div class="norm-bar"><div class="norm-marker" id="normMarker" style="left:50%"></div></div>
+              <span id="normHigh" class="norm-edge">—</span>
+            </div>
+          </div>
+
+          <div id="stressTypeWrap" style="display:none"></div>
+
+          <div class="section-label">
+            <i data-lucide="gauge" style="width:11px;height:11px"></i>Cargas autonómicas
+          </div>
+          <div class="cargas-grid" id="cargasGrid">
+            <div class="empty" style="grid-column:1/-1">Esperando medición…</div>
+          </div>
+
+          <div class="section-label">
+            <i data-lucide="bar-chart-2" style="width:11px;height:11px"></i>Métricas rápidas
+          </div>
+          <div class="metrics-scroll" id="metricsGrid">
+            <div class="empty">—</div>
+          </div>
+
+          <div class="section-label">
+            <i data-lucide="clipboard-list" style="width:11px;height:11px"></i>Plan de intervención
+          </div>
+          <div id="planList"><div class="empty">—</div></div>
+
+          <div class="section-label">
+            <i data-lucide="dna" style="width:11px;height:11px"></i>Biomarcadores HRV
+          </div>
+          <div style="overflow-x:auto">
+            <div id="bioTableWrap"><div class="empty">—</div></div>
+          </div>
+
+          <button class="btn btn-save-full" id="btnSave2">
+            <i data-lucide="save" style="width:16px;height:16px"></i>
+            Guardar sesión
+          </button>
+
+          <div style="height:16px"></div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════
+           HISTORIAL
+      ══════════════════════════════ -->
+      <div class="tab-panel" id="tabHistorial">
+        <div class="panel-body">
+
+          <div class="hist-search-row">
+            <div class="hist-input-wrap">
+              <i data-lucide="search" style="width:15px;height:15px;color:var(--text-3);flex-shrink:0"></i>
+              <input id="histDni" class="hist-input" type="text" placeholder="Buscar por DNI / ID…"/>
+            </div>
+            <button class="btn-search" id="btnHistSearch">
+              <i data-lucide="arrow-right" style="width:16px;height:16px"></i>
+            </button>
+          </div>
+
+          <div class="range-row">
+            <button class="range-btn active" data-range="7">Semana</button>
+            <button class="range-btn" data-range="30">Mes</button>
+            <button class="range-btn" data-range="90">3 Meses</button>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-card-head">
+              <span class="chart-title">RMSSD</span>
+              <span class="chart-unit">ms · variabilidad cardíaca</span>
+            </div>
+            <div class="chart-wrap"><canvas id="chartRmssd"></canvas></div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-card-head">
+              <span class="chart-title">Cargas autonómicas</span>
+              <span class="chart-unit">0–100</span>
+            </div>
+            <div class="chart-wrap"><canvas id="chartCargas"></canvas></div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-card-head">
+              <span class="chart-title">Balance PNS / SNS</span>
+              <span class="chart-unit">% potencia espectral</span>
+            </div>
+            <div class="chart-wrap"><canvas id="chartBalance"></canvas></div>
+          </div>
+
+          <div class="section-label">
+            <i data-lucide="list" style="width:11px;height:11px"></i>Sesiones recientes
+          </div>
+          <div id="histList">
+            <div class="hist-empty">
+              <i data-lucide="clock" style="width:34px;height:34px;opacity:0.25;display:block;margin:0 auto 10px"></i>
+              <p>Buscá un paciente para ver su historial</p>
+            </div>
+          </div>
+
+          <div style="height:16px"></div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════
+           RECOMENDACIONES
+      ══════════════════════════════ -->
+      <div class="tab-panel" id="tabRecs">
+        <div class="panel-body">
+
+          <div class="recs-header">
+            <div class="recs-title">Plan integral</div>
+            <div class="recs-sub">Basado en tu última medición HRV</div>
+          </div>
+
+          <div id="recsWrap">
+            <div class="hist-empty">
+              <i data-lucide="sparkles" style="width:38px;height:38px;opacity:0.25;display:block;margin:0 auto 12px"></i>
+              <p>Realizá una medición para ver<br>tus recomendaciones personalizadas</p>
+            </div>
+          </div>
+
+          <div style="height:16px"></div>
+        </div>
+      </div>
+
+    </div><!-- /tabContent -->
+  </div><!-- /main-col -->
 
 </div><!-- /app -->
 
@@ -541,10 +501,10 @@
 <script src="/static/js/hrv_validator.js"></script>
 <script>
 /* ═══════════════════════════════════════════════
-   HBA NAV CONTROLLER v3
+   HBA NAV CONTROLLER v4 — Light / Premium
    — Tab routing
-   — Kubios-style gauge
-   — History charts (Chart.js)
+   — Gauge sin aguja (arco + valor central)
+   — History charts (Chart.js, tema claro)
    — Home metrics live update
 ═══════════════════════════════════════════════ */
 
@@ -555,6 +515,7 @@ const TAB_LABELS = {
 };
 
 function switchTab(id){
+  if(!id) return;
   document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
   const panel=document.getElementById(id);
@@ -582,22 +543,20 @@ document.getElementById("btnSave2")?.addEventListener("click",()=>{
   document.getElementById("btnSave")?.click();
 });
 
-// ── Gauge ─────────────────────────────────────
+// ── Gauge (sin aguja: arco fijo + zona + valor central) ──
+const ZONE_MAP   ={optimo:"ÓPTIMO",funcional:"NORMAL",comprometido:"BAJO",critico:"MUY BAJO"};
 function setGauge(rmssd, stateKey){
-  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-  // Mapeo: 0ms→ -85°(muy bajo), 80ms→ +85°(alto)
-  const v=rmssd??0;
-  const deg=clamp((v/80)*170-85,-85,85);
-  const needle=document.getElementById("gaugeNeedle");
-  if(needle) needle.style.transform=`rotate(${deg}deg)`;
   const gv=document.getElementById("gaugeValue");
   if(gv) gv.textContent=rmssd!=null?(+rmssd).toFixed(1):"—";
-  const stateMap={optimo:"ÓPTIMO",funcional:"NORMAL",comprometido:"BAJO",critico:"MUY BAJO"};
+  const gz=document.getElementById("gaugeZone");
+  if(gz) gz.textContent=ZONE_MAP[stateKey]||"NORMAL";
   const gs=document.getElementById("gaugeState");
   if(gs){
-    gs.textContent=stateMap[stateKey]||(rmssd?"NORMAL":"Sin medición");
+    gs.textContent=ZONE_MAP[stateKey]||(rmssd?"NORMAL":"Sin medición");
     gs.className="gauge-state "+(stateKey||"");
   }
+  const gd=document.getElementById("gaugeDesc");
+  if(gd && rmssd!=null) gd.textContent="Último registro de tu variabilidad cardíaca.";
 }
 
 // ── Home metrics ──────────────────────────────
@@ -613,8 +572,8 @@ function updateHome(m){
   $("hmPns").textContent=pPct;
   $("pnsVal").textContent=pPct+"%"; $("snsVal").textContent=sPct+"%";
   const pFill=$("pnsFill"), sFill=$("snsFill");
-  if(pFill) pFill.style.height=pPct+"%";
-  if(sFill) sFill.style.height=sPct+"%";
+  if(pFill) pFill.style.width=pPct+"%";
+  if(sFill) sFill.style.width=sPct+"%";
   const dash=m.hba_dashboard;
   if(dash?.semaphore){
     const sem=dash.semaphore;
@@ -639,23 +598,23 @@ setInterval(()=>{
   }
 },400);
 
-// ── History charts ────────────────────────────
+// ── History charts (tema claro) ───────────────
 let cRmssd=null,cCargas=null,cBal=null;
 
 const CHOPT={
   responsive:true,maintainAspectRatio:false,
   plugins:{legend:{display:false},tooltip:{
-    backgroundColor:"rgba(13,15,20,0.96)",
-    borderColor:"rgba(255,255,255,0.10)",borderWidth:1,
-    titleColor:"#eef2ff",bodyColor:"#8896b3",padding:10,cornerRadius:10,
-    titleFont:{family:"'JetBrains Mono',monospace",size:11},
-    bodyFont:{family:"'JetBrains Mono',monospace",size:11},
+    backgroundColor:"rgba(17,24,39,0.92)",
+    borderColor:"rgba(255,255,255,0.08)",borderWidth:1,
+    titleColor:"#F8FAFD",bodyColor:"#c6cedb",padding:10,cornerRadius:10,
+    titleFont:{family:"'Inter',sans-serif",size:11,weight:"600"},
+    bodyFont:{family:"'Inter',sans-serif",size:11},
   }},
   scales:{
-    x:{grid:{color:"rgba(255,255,255,0.04)"},
-       ticks:{color:"#3d4d6a",font:{family:"'JetBrains Mono',monospace",size:9},maxRotation:45}},
-    y:{grid:{color:"rgba(255,255,255,0.04)"},
-       ticks:{color:"#3d4d6a",font:{family:"'JetBrains Mono',monospace",size:9}}}
+    x:{grid:{color:"rgba(17,24,39,0.05)"},
+       ticks:{color:"#94A3B8",font:{family:"'Inter',sans-serif",size:10},maxRotation:45}},
+    y:{grid:{color:"rgba(17,24,39,0.05)"},
+       ticks:{color:"#94A3B8",font:{family:"'Inter',sans-serif",size:10}}}
   }
 };
 
@@ -664,28 +623,28 @@ function ensureCharts(){
   if(!cRmssd && g("chartRmssd")){
     cRmssd=new Chart(g("chartRmssd"),{type:"line",data:{labels:[],datasets:[{
       label:"RMSSD",data:[],
-      borderColor:"#00e5ff",borderWidth:2.5,pointRadius:5,tension:0.4,
-      pointBackgroundColor:"#00e5ff",pointBorderColor:"#0d0f14",pointBorderWidth:2,
-      fill:true,backgroundColor:"rgba(0,229,255,0.07)"
+      borderColor:"#1677FF",borderWidth:2.5,pointRadius:4,tension:0.4,
+      pointBackgroundColor:"#1677FF",pointBorderColor:"#fff",pointBorderWidth:2,
+      fill:true,backgroundColor:"rgba(22,119,255,0.08)"
     }]},options:{...CHOPT}});
   }
   if(!cCargas && g("chartCargas")){
     cCargas=new Chart(g("chartCargas"),{type:"bar",data:{labels:[],datasets:[
-      {label:"Autonómica",data:[],backgroundColor:"rgba(0,229,160,0.75)",borderRadius:4,borderSkipped:false},
-      {label:"Emocional", data:[],backgroundColor:"rgba(59,130,246,0.75)",borderRadius:4,borderSkipped:false},
-      {label:"Física",    data:[],backgroundColor:"rgba(245,158,11,0.75)",borderRadius:4,borderSkipped:false},
-      {label:"Estrés",    data:[],backgroundColor:"rgba(239,68,68,0.75)", borderRadius:4,borderSkipped:false},
+      {label:"Autonómica",data:[],backgroundColor:"rgba(29,184,142,0.8)",borderRadius:4,borderSkipped:false},
+      {label:"Emocional", data:[],backgroundColor:"rgba(22,119,255,0.8)",borderRadius:4,borderSkipped:false},
+      {label:"Física",    data:[],backgroundColor:"rgba(255,122,48,0.8)",borderRadius:4,borderSkipped:false},
+      {label:"Estrés",    data:[],backgroundColor:"rgba(255,90,84,0.8)", borderRadius:4,borderSkipped:false},
     ]},options:{...CHOPT,plugins:{...CHOPT.plugins,legend:{display:true,
-      labels:{color:"#8896b3",boxWidth:10,padding:12,
-              font:{family:"'JetBrains Mono',monospace",size:9}}}}}});
+      labels:{color:"#5E6B82",boxWidth:10,padding:12,
+              font:{family:"'Inter',sans-serif",size:10}}}}}});
   }
   if(!cBal && g("chartBalance")){
     cBal=new Chart(g("chartBalance"),{type:"line",data:{labels:[],datasets:[
-      {label:"PNS",data:[],borderColor:"#00e5a0",borderWidth:2,pointRadius:4,tension:0.4,fill:false},
-      {label:"SNS",data:[],borderColor:"#ef4444", borderWidth:2,pointRadius:4,tension:0.4,fill:false},
+      {label:"PNS",data:[],borderColor:"#1677FF",borderWidth:2,pointRadius:3,tension:0.4,fill:false},
+      {label:"SNS",data:[],borderColor:"#FF7A30", borderWidth:2,pointRadius:3,tension:0.4,fill:false},
     ]},options:{...CHOPT,plugins:{...CHOPT.plugins,legend:{display:true,
-      labels:{color:"#8896b3",boxWidth:10,padding:12,
-              font:{family:"'JetBrains Mono',monospace",size:9}}}}}});
+      labels:{color:"#5E6B82",boxWidth:10,padding:12,
+              font:{family:"'Inter',sans-serif",size:10}}}}}});
   }
 }
 
