@@ -3,6 +3,7 @@ HBA v2.0 — hrv_core.py
 PROTOCOLO: RMSSD corregido por edad/sexo como métrica principal.
 Todos los sensores terminan en NN (RR sin artefactos).
 """
+import copy
 import numpy as np
 from scipy import interpolate, signal as scipy_signal
 
@@ -414,7 +415,7 @@ def enrich_dashboard(result, payload):
     stress_type=cargas.get("stress_type","indeterminado")
     sem_key=classify_semaphore(rmssd_corr,rm_low,rm_high,ca_score)
     sem_data=SEMAPHORE[sem_key]
-    recs=RECS_INTEGRALES.get(sem_key, RECS_INTEGRALES["funcional"])
+    recs=copy.deepcopy(RECS_INTEGRALES.get(sem_key, RECS_INTEGRALES["funcional"]))  # copia: no mutar el diccionario global entre requests
     # Nota extra si hay estrés emocional
     if stress_type in ("emocional","emocional_leve"):
         recs["nota_stress"]="Tu HRV indica predominio de estrés emocional/psicológico. Las técnicas vagales y coherencia cardíaca son especialmente indicadas. Considerá apoyo psicológico si persiste."
