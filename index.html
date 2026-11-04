@@ -2,731 +2,257 @@
 <html lang="es">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
   <meta name="mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <title>HANNA·HRV — Heart Rate Variability</title>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+  <meta name="theme-color" content="#0A5CFF"/>
+  <meta name="description" content="HANNA·HRV: medición y análisis de variabilidad del ritmo cardíaco."/>
+  <title>HANNA·HRV — Variabilidad del ritmo cardíaco</title>
   <link rel="manifest" href="/static/manifest.json"/>
-  <link rel="apple-touch-icon" href="/static/icons/icon-512.png"/>
-  <link rel="icon" type="image/png" href="/static/icons/icon-512.png"/>
-  <meta name="theme-color" content="#1677FF"/>
+  <link rel="apple-touch-icon" href="/static/icons/icon-180.png"/>
+  <link rel="icon" type="image/svg+xml" href="/static/icons/icon.svg"/>
+  <link rel="preload" href="/static/fonts/sora-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin/>
+  <link rel="preload" href="/static/fonts/figtree-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin/>
   <link rel="stylesheet" href="/static/css/style.css"/>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 </head>
 <body>
+<a class="skip" href="#main">Saltar al contenido</a>
 
-<div id="app">
+<div class="app">
 
-  <!-- ── SIDE NAV ── -->
-  <nav class="bottom-nav" id="bottomNav">
-    <div class="side-brand">H</div>
-    <button class="nav-btn active" data-tab="tabHome">
-      <div class="nav-icon-wrap"><i data-lucide="home" style="width:21px;height:21px"></i></div>
-      <span>Inicio</span>
-    </button>
-    <button class="nav-btn" data-tab="tabMedir">
-      <div class="nav-icon-wrap"><i data-lucide="activity" style="width:21px;height:21px"></i></div>
-      <span>Medir</span>
-    </button>
-    <button class="nav-btn" data-tab="tabResultados">
-      <div class="nav-icon-wrap"><i data-lucide="bar-chart-2" style="width:21px;height:21px"></i></div>
-      <span>Resultados</span>
-    </button>
-    <button class="nav-btn" data-tab="tabHistorial">
-      <div class="nav-icon-wrap"><i data-lucide="history" style="width:21px;height:21px"></i></div>
-      <span>Historial</span>
-    </button>
-    <button class="nav-btn" data-tab="tabRecs">
-      <div class="nav-icon-wrap"><i data-lucide="sparkles" style="width:21px;height:21px"></i></div>
-      <span>Plan</span>
-    </button>
-    <button class="side-settings" type="button" aria-hidden="true">
-      <i data-lucide="settings" style="width:21px;height:21px"></i>
-      <span>Config</span>
-    </button>
+  <!-- Navegación: barra inferior en móvil, columna lateral en pantallas anchas -->
+  <nav class="nav" aria-label="Principal">
+    <button class="nav-btn is-active" type="button" data-view="home" aria-current="page"><svg class="ic" aria-hidden="true"><use href="/static/icons/sprite.svg#i-house"/></svg><span>Inicio</span></button>
+    <button class="nav-btn" type="button" data-view="measure"><svg class="ic" aria-hidden="true"><use href="/static/icons/sprite.svg#i-activity"/></svg><span>Medir</span></button>
+    <button class="nav-btn" type="button" data-view="history"><svg class="ic" aria-hidden="true"><use href="/static/icons/sprite.svg#i-history"/></svg><span>Historial</span></button>
   </nav>
 
-  <div class="main-col">
-
-    <!-- ── TOPBAR ── -->
-    <header class="topbar" id="topbar">
-      <div class="logo">
-        <img class="logo-mark-img" src="/static/icons/icon-512.png" alt="HANNA"/>
-        <div class="logo-wordmark">
-          <div class="logo-text">HANNA<span class="logo-hrv">.HRV</span></div>
-          <div class="logo-sub" id="topbarSub">Heart Rate Variability</div>
-        </div>
-      </div>
-      <div class="topbar-right">
-        <div class="pill">
-          <span class="pill-dot" id="statusDot"></span>
-          <span id="statusText">Listo</span>
-        </div>
-        <div class="timer-chip" id="chipTimer">00:00</div>
+  <div class="shell">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="HANNA HRV, inicio">
+        <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="11" fill="url(#bg)"/><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2D8CFF"/><stop offset="1" stop-color="#0A2A6B"/></linearGradient></defs><path d="M5 21h8l3-8 5 16 4-11 2 3h8" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="brand-txt"><strong>HANNA·HRV</strong><small>Variabilidad del ritmo cardíaco</small></span>
+      </a>
+      <div class="top-right">
+        <span class="chip-patient"><svg class="ic" aria-hidden="true"><use href="/static/icons/sprite.svg#i-user"/></svg><span id="patientChipTxt">Sin paciente</span></span>
+        <span class="pill" role="status" aria-live="polite"><span class="pill-dot" id="statusDot"></span><span id="statusText">Listo</span></span>
       </div>
     </header>
 
-    <!-- ── TAB CONTENT ── -->
-    <div id="tabContent">
+    <main id="main" class="main">
 
-      <!-- ══════════════════════════════
-           HOME
-      ══════════════════════════════ -->
-      <div class="tab-panel active" id="tabHome">
-        <div class="panel-body">
-
-          <div class="home-greeting">
-            <span class="greeting-hi">Buenos<br><em>días</em></span>
-            <span class="greeting-sub">The path of<br><strong>autonomic precision</strong></span>
+      <!-- ═════════ INICIO ═════════ -->
+      <section id="view-home" class="view is-active" aria-labelledby="homeTitle">
+        <div class="home-grid">
+          <div class="hero">
+            <svg class="hero-ecg" viewBox="0 0 600 120" preserveAspectRatio="none" aria-hidden="true"><path d="M0 70h150l18-40 26 82 24-62 14 20h110l20-36 28 78 22-52 12 10h176" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <h1 id="homeTitle">Nueva medición HRV</h1>
+            <p class="hero-p">Te guiamos en seis pasos: identificás al paciente, elegís el método, te preparás, medís y revisás los resultados.</p>
+            <button class="btn btn-hero" type="button" data-act="start"><svg class="ic" aria-hidden="true"><use href="/static/icons/sprite.svg#i-circle-play"/></svg>Iniciar nueva medición</button>
+            <p class="hero-who" id="homePatient">Todavía no cargaste un paciente</p>
           </div>
 
-          <!-- GAUGE -->
-          <div class="gauge-wrap">
-            <div class="gauge-halo"></div>
-            <svg class="gauge-svg" viewBox="0 0 340 300" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <linearGradient id="gaugeGradient" x1="20%" y1="100%" x2="80%" y2="0%">
-                  <stop offset="0%"   stop-color="#FF7A30"/>
-                  <stop offset="16%"  stop-color="#FF9757"/>
-                  <stop offset="40%"  stop-color="#2F80FF"/>
-                  <stop offset="70%"  stop-color="#1677FF"/>
-                  <stop offset="100%" stop-color="#58C8FF"/>
-                </linearGradient>
-                <filter id="gaugeGlow" x="-60%" y="-60%" width="220%" height="220%">
-                  <feGaussianBlur stdDeviation="7" result="blur"/>
-                  <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                </filter>
-                <filter id="dotGlow" x="-200%" y="-200%" width="500%" height="500%">
-                  <feGaussianBlur stdDeviation="4" result="blur"/>
-                  <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                </filter>
-              </defs>
-              <!-- Arco fondo -->
-              <path d="M 89.7 274.7 A 140 140 0 1 1 250.3 274.7" fill="none" stroke="rgba(22,119,255,0.08)" stroke-width="16" stroke-linecap="round"/>
-              <!-- Arco gradiente con glow -->
-              <path d="M 89.7 274.7 A 140 140 0 1 1 250.3 274.7" fill="none" stroke="url(#gaugeGradient)" stroke-width="16" stroke-linecap="round" filter="url(#gaugeGlow)"/>
-              <!-- Endpoints -->
-              <circle cx="89.7"  cy="274.7" r="7" fill="#FF7A30" filter="url(#dotGlow)"/>
-              <circle cx="250.3" cy="274.7" r="7" fill="#58C8FF" filter="url(#dotGlow)"/>
-              <!-- Zone label (única, arriba del arco) -->
-              <text x="170" y="18"  class="gauge-zone-label" text-anchor="middle">NORMAL</text>
-              <!-- Etiquetas extremos -->
-              <text x="60"  y="296" class="gauge-edge-label low"  text-anchor="start">BAJO</text>
-              <text x="280" y="296" class="gauge-edge-label high" text-anchor="end">ALTO</text>
-            </svg>
-            <div class="gauge-center">
-              <div class="gauge-zone" id="gaugeZone">NORMAL</div>
-              <div class="gauge-icon"><i data-lucide="activity" style="width:22px;height:22px"></i></div>
-              <div class="gauge-metric-label">RMSSD</div>
-              <div class="gauge-value" id="gaugeValue">—</div>
-              <div class="gauge-unit">ms</div>
-              <div class="gauge-divider"></div>
-              <div class="gauge-state" id="gaugeState">Sin medición</div>
-              <div class="gauge-desc" id="gaugeDesc">Realizá una nueva medición para obtener tu estado actual</div>
-            </div>
-          </div>
+          <section class="card" aria-labelledby="lastTitle">
+            <div class="card-head"><h2 id="lastTitle">Última medición</h2></div>
+            <div id="homeLast"></div>
+          </section>
 
-          <!-- MÉTRICAS HOME -->
-          <div class="home-metrics">
-            <div class="hm-card">
-              <div class="hm-icon coral"><i data-lucide="heart-pulse" style="width:18px;height:18px"></i></div>
-              <div class="hm-lbl">FC media</div>
-              <div class="hm-val" id="hmFc">—</div>
-              <div class="hm-unit">bpm</div>
-            </div>
-            <div class="hm-card">
-              <div class="hm-icon blue"><i data-lucide="activity" style="width:18px;height:18px"></i></div>
-              <div class="hm-lbl">RMSSD</div>
-              <div class="hm-val" id="hmRmssd">—</div>
-              <div class="hm-unit">ms</div>
-            </div>
-            <div class="hm-card">
-              <div class="hm-icon blue"><i data-lucide="brain" style="width:18px;height:18px"></i></div>
-              <div class="hm-lbl">PNS idx</div>
-              <div class="hm-val" id="hmPns">—</div>
-              <div class="hm-unit"></div>
-            </div>
-            <div class="hm-card">
-              <div class="hm-icon orange"><i data-lucide="zap" style="width:18px;height:18px"></i></div>
-              <div class="hm-lbl">DFA α1</div>
-              <div class="hm-val" id="hmDfa">—</div>
-              <div class="hm-unit"></div>
-            </div>
-          </div>
+          <section class="card" aria-labelledby="howTitle">
+            <div class="card-head"><h2 id="howTitle">Cómo empezar</h2></div>
+            <ol class="how">
+              <li><strong>Cargá los datos</strong><span>ID del paciente y edad. La edad permite comparar con valores de referencia.</span></li>
+              <li><strong>Elegí cómo medir</strong><span>Cámara, sensor Bluetooth, vibración o un archivo RR. Cada método tiene sus indicaciones.</span></li>
+              <li><strong>Medí y revisá</strong><span>La medición dura 1, 3 o 5 minutos según el método. Al terminar ves los indicadores.</span></li>
+            </ol>
+          </section>
 
-          <!-- BALANCE PNS/SNS -->
-          <div class="section-label">
-            <i data-lucide="git-branch" style="width:11px;height:11px"></i>
-            Balance autonómico
+          <div class="stack">
+            <section class="card" aria-labelledby="dataTitle">
+              <div class="card-head"><h2 id="dataTitle">Estado de los datos</h2></div>
+              <div id="homeData"></div>
+            </section>
+            <section class="card card-link" aria-labelledby="histTitle">
+              <div class="card-head"><h2 id="histTitle">Historial</h2></div>
+              <p class="muted" id="homeHistInfo"></p>
+              <button class="btn btn-soft btn-block" type="button" data-act="goto-history"><svg class="ic" aria-hidden="true"><use href="/static/icons/sprite.svg#i-history"/></svg>Abrir historial</button>
+            </section>
           </div>
-          <div class="balance-card">
-            <div class="bal-col">
-              <div class="bal-label cyan">PNS</div>
-              <div class="bal-subtitle">Parasimpático</div>
-              <div class="bal-track">
-                <div class="bal-fill-pns" id="pnsFill" style="width:50%"></div>
-              </div>
-              <div class="bal-val cyan" id="pnsVal">—</div>
-            </div>
-            <div class="bal-divider">
-              <i data-lucide="scale" style="width:18px;height:18px"></i>
-            </div>
-            <div class="bal-col">
-              <div class="bal-label red">SNS</div>
-              <div class="bal-subtitle">Simpático</div>
-              <div class="bal-track">
-                <div class="bal-fill-sns" id="snsFill" style="width:50%"></div>
-              </div>
-              <div class="bal-val red" id="snsVal">—</div>
-            </div>
-          </div>
-
-          <!-- ESTADO MINI -->
-          <div class="sem-mini" id="semMini" style="display:none">
-            <div class="sem-mini-icon" id="semMiniIcon">●</div>
-            <div class="sem-mini-body">
-              <div class="sem-mini-label" id="semMiniLabel">—</div>
-              <div class="sem-mini-desc"  id="semMiniDesc">—</div>
-            </div>
-          </div>
-
-          <!-- CTA -->
-          <button class="btn-cta" id="btnGoMedir">
-            <i data-lucide="play-circle" style="width:20px;height:20px"></i>
-            Nueva medición
-          </button>
-
-          <div style="height:16px"></div>
         </div>
-      </div>
+      </section>
 
-      <!-- ══════════════════════════════
-           MEDIR
-      ══════════════════════════════ -->
-      <div class="tab-panel" id="tabMedir">
-        <div class="panel-body">
+      <!-- ═════════ MEDIR (flujo guiado) ═════════ -->
+      <section id="view-measure" class="view" aria-labelledby="measureTitle" data-phase="idle">
+        <header class="page-head">
+          <h1 id="measureTitle">Nueva medición</h1>
+          <p class="stepper-compact" id="stepCompact" aria-live="polite"></p>
+        </header>
+        <div class="stepper-wrap">
+          <div class="stepper-bar" aria-hidden="true"><i id="stepProgress"></i></div>
+          <ol class="stepper" id="stepper" aria-label="Pasos de la medición"></ol>
+        </div>
 
-          <div class="section-label">
-            <i data-lucide="user" style="width:11px;height:11px"></i>Paciente
-          </div>
-          <div class="form-col">
-            <div class="field">
-              <label class="field-label">ID / DNI / Código</label>
-              <input id="patientId" class="input" type="text" placeholder="Ej: A-102" autocomplete="off"/>
-            </div>
-            <div class="form-2col">
-              <div class="field">
-                <label class="field-label">Edad</label>
-                <input id="age" class="input" type="number" min="0" max="120" placeholder="45"/>
+        <!-- Paso 1 -->
+        <section class="step-panel card" id="step-1">
+          <header class="step-head"><h2>Identificá al paciente</h2><p>Estos datos se usan para guardar la sesión y para interpretar los resultados según edad y sexo.</p></header>
+          <form id="profileForm" novalidate>
+            <div class="form-grid">
+              <div class="field span-2">
+                <label for="patientId">Identificador del paciente <span class="req">obligatorio</span></label>
+                <input id="patientId" class="input" type="text" autocomplete="off" autocapitalize="characters" placeholder="Ej: A-102" aria-describedby="hintPatient errPatient" aria-invalid="false"/>
+                <p class="hint" id="hintPatient">ID, DNI o código. Con este dato después consultás el historial.</p>
+                <p class="err" id="errPatient" role="alert"></p>
               </div>
               <div class="field">
-                <label class="field-label">Sexo</label>
-                <select id="sex" class="select">
-                  <option value="">—</option>
-                  <option value="M">Masculino</option>
-                  <option value="F">Femenino</option>
-                </select>
+                <label for="age">Edad</label>
+                <input id="age" class="input" type="number" inputmode="numeric" min="0" max="120" placeholder="Ej: 45" aria-describedby="hintAge errAge" aria-invalid="false"/>
+                <p class="hint" id="hintAge">Años cumplidos. Ajusta el rango de referencia.</p>
+                <p class="err" id="errAge" role="alert"></p>
+              </div>
+              <div class="field">
+                <label for="sex">Sexo</label>
+                <select id="sex" class="input"><option value="">Sin indicar</option><option value="M">Masculino</option><option value="F">Femenino</option></select>
+                <p class="hint">También ajusta el rango de referencia.</p>
+              </div>
+              <details class="more span-2">
+                <summary>Datos clínicos opcionales<svg class="ic acc-i" aria-hidden="true"><use href="/static/icons/sprite.svg#i-chevron-right"/></svg></summary>
+                <div class="form-grid">
+                  <div class="field span-2"><label for="comorbidities">Comorbilidades</label><input id="comorbidities" class="input" type="text" placeholder="Ej: HTA, DM2"/></div>
+                  <div class="field span-2"><label for="notes">Notas</label><textarea id="notes" class="input" rows="3" placeholder="Observaciones sobre la medición"></textarea></div>
+                </div>
+              </details>
+            </div>
+            <div class="actions"><button class="btn btn-primary" type="submit">Continuar<svg class="ic" aria-hidden="true"><use href="/static/icons/sprite.svg#i-arrow-right"/></svg></button></div>
+          </form>
+        </section>
+
+        <!-- Paso 2 -->
+        <section class="step-panel card" id="step-2" hidden>
+          <header class="step-head"><h2>Elegí cómo medir</h2><p>Cada método registra el pulso de una forma distinta. Elegí el que tengas disponible.</p></header>
+          <div class="methods" id="methodGrid" role="radiogroup" aria-label="Método de medición"></div>
+          <div class="actions"><button class="btn btn-ghost" type="button" data-act="back" data-to="1"><svg class="ic" aria-hidden="true"><use href="/static/icons/sprite.svg#i-arrow-left"/></svg>Atrás</button>
+            <button class="btn btn-primary" type="button" data-act="next" data-to="3">Continuar<svg class="ic" aria-hidden="true"><use href="/static/icons/sprite.svg#i-arrow-right"/></svg></button></div>
+        </section>
+
+        <!-- Paso 3 -->
+        <section class="step-panel card" id="step-3" hidden>
+          <header class="step-head"><h2 id="prepTitle">Preparación</h2><p>Leé estas indicaciones antes de empezar. Una buena preparación mejora la calidad del resultado.</p></header>
+          <div id="prepBody"></div>
+          <div class="field prep-opts">
+            <p class="label" id="durLabel">Duración de la medición</p>
+            <div class="seg" id="durRow" role="group" aria-labelledby="durLabel"></div>
+          </div>
+          <div id="rrWrap" class="field" hidden>
+            <p class="label">Archivo de intervalos RR</p>
+            <input class="sr-only" type="file" id="rrFile" accept=".csv,.json"/>
+            <label class="drop" for="rrFile"><svg class="ic ic-lg" aria-hidden="true"><use href="/static/icons/sprite.svg#i-file-up"/></svg><span id="rrFileLabel">Tocá para elegir un archivo .csv o .json</span></label>
+            <p class="err" id="rrError" role="alert"></p>
+          </div>
+          <div class="actions"><button class="btn btn-ghost" type="button" data-act="back" data-to="2"><svg class="ic" aria-hidden="true"><use href="/static/icons/sprite.svg#i-arrow-left"/></svg>Atrás</button>
+            <button class="btn btn-primary" type="button" id="btnToMeasure" data-act="next" data-to="4">Ir a la medición<svg class="ic" aria-hidden="true"><use href="/static/icons/sprite.svg#i-arrow-right"/></svg></button></div>
+          <p class="hint center" id="prepHint"></p>
+        </section>
+
+        <!-- Paso 4 -->
+        <section class="step-panel card" id="step-4" hidden>
+          <header class="step-head"><h2>Medición · <span id="mMethod"></span></h2><p id="mSub">Seguí el temporizador y no muevas el sensor ni el dispositivo hasta que termine.</p></header>
+          <div class="measure-grid">
+            <div class="m-col">
+              <div class="timer-card" id="timerCard">
+                <div class="timer"><span class="timer-n" id="mTimer" aria-hidden="true">00:00</span><span class="timer-r" id="mRemain"></span></div>
+                <div class="progress" id="mProgressWrap" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Progreso de la medición"><i id="mProgress"></i></div>
+                <ul class="live-stats">
+                  <li><span>Conexión</span><strong id="mConn">—</strong></li>
+                  <li id="mSignalRow"><span>Señal</span><strong class="signal" id="mSignal" data-lvl="0"><span class="sig-bars" aria-hidden="true"><i></i><i></i><i></i></span><span id="mSignalTxt">Sin iniciar</span></strong></li>
+                </ul>
+                <p class="hint" id="mHint" aria-live="polite"></p>
+              </div>
+              <div class="import-card" id="mImport" hidden><svg class="ic ic-lg" aria-hidden="true"><use href="/static/icons/sprite.svg#i-file-text"/></svg><div><strong>Archivo listo para analizar</strong><p id="mImportInfo"></p></div></div>
+              <p class="msg" id="mMsg" aria-live="polite"></p>
+              <div id="mError" hidden></div>
+            </div>
+            <div class="v-col">
+              <div class="chart-box chart-signal"><canvas id="signalChart" role="img" aria-label="Señal registrada en vivo"></canvas></div>
+              <div id="cameraBox" class="camera-box" hidden>
+                <div class="video-wrap"><video id="video" playsinline autoplay muted></video><canvas id="frameCanvas" hidden></canvas></div>
+                <label id="torchWrap" class="switch"><input type="checkbox" id="torchToggle" checked/><span class="switch-t" aria-hidden="true"></span><span>Encender el flash automáticamente</span></label>
               </div>
             </div>
-            <div class="field">
-              <label class="field-label">Comorbilidades</label>
-              <input id="comorbidities" class="input" type="text" placeholder="HTA, DM2…"/>
-            </div>
-            <div class="field">
-              <label class="field-label">Notas</label>
-              <textarea id="notes" class="textarea" placeholder="Observaciones clínicas…"></textarea>
-            </div>
           </div>
+          <div class="actions">
+            <button class="btn btn-ghost" type="button" id="btnBackPrep" data-act="back" data-to="3"><svg class="ic" aria-hidden="true"><use href="/static/icons/sprite.svg#i-arrow-left"/></svg>Atrás</button>
+            <button class="btn btn-primary" type="button" id="btnStart"><svg class="ic" aria-hidden="true"><use href="/static/icons/sprite.svg#i-play"/></svg><span id="btnStartTxt">Iniciar medición</span></button>
+            <button class="btn btn-stop" type="button" id="btnStop" hidden><svg class="ic" aria-hidden="true"><use href="/static/icons/sprite.svg#i-square"/></svg>Detener y calcular</button>
+            <button class="btn btn-soft" type="button" id="btnSkipRes" data-act="goto-results" hidden>Ver últimos resultados</button>
+          </div>
+        </section>
 
-          <div class="section-label">
-            <i data-lucide="activity" style="width:11px;height:11px"></i>Sensor
-          </div>
-          <div class="sensor-scroll">
-            <div class="sensor-card active" data-sensor="camera_ppg">
-              <span class="sensor-icon"><i data-lucide="camera" style="width:22px;height:22px;stroke:var(--blue-1);stroke-width:1.6"></i></span>
-              <div class="sensor-name">Cámara PPG</div>
-              <div class="sensor-tag good">Recomendado</div>
+        <!-- Paso 5 -->
+        <section class="step-panel" id="step-5" hidden>
+          <header class="step-head step-head-flat"><h2>Resultados</h2><p id="resMeta" class="muted"></p></header>
+          <div id="resEmpty" class="card"><div class="empty-state is-flat"><svg class="ic ic-xl" aria-hidden="true"><use href="/static/icons/sprite.svg#i-chart-no-axes-column"/></svg><h3>Todavía no hay resultados</h3><p>Completá una medición para ver acá los indicadores calculados.</p><button class="btn btn-primary" type="button" data-act="repeat">Iniciar medición</button></div></div>
+          <div id="resContent" hidden>
+            <div id="valBanner"></div>
+            <div id="resHero"></div>
+            <div class="tabs" role="tablist" aria-label="Secciones del resultado">
+              <button class="tab" role="tab" type="button" data-rtab="results" aria-selected="true">Resultados</button>
+              <button class="tab" role="tab" type="button" data-rtab="interp" aria-selected="false" tabindex="-1">Interpretación</button>
+              <button class="tab" role="tab" type="button" data-rtab="recs" aria-selected="false" tabindex="-1" aria-label="Recomendaciones"><span class="t-long">Recomendaciones</span><span class="t-short" aria-hidden="true">Plan</span></button>
             </div>
-            <div class="sensor-card" data-sensor="polar_h10">
-              <span class="sensor-icon"><i data-lucide="bluetooth" style="width:22px;height:22px;stroke:var(--s-opt);stroke-width:1.6"></i></span>
-              <div class="sensor-name">Polar H10</div>
-              <div class="sensor-tag best">Más preciso</div>
-            </div>
-            <div class="sensor-card" data-sensor="face_rppg">
-              <span class="sensor-icon"><i data-lucide="scan-face" style="width:22px;height:22px;stroke:var(--text-2);stroke-width:1.6"></i></span>
-              <div class="sensor-name">rPPG Facial</div>
-              <div class="sensor-tag exp">Experimental</div>
-            </div>
-            <div class="sensor-card" data-sensor="vibration_scg">
-              <span class="sensor-icon"><i data-lucide="vibrate" style="width:22px;height:22px;stroke:var(--text-2);stroke-width:1.6"></i></span>
-              <div class="sensor-name">Vibración</div>
-              <div class="sensor-tag exp">Experimental</div>
-            </div>
-            <div class="sensor-card" data-sensor="rr_upload">
-              <span class="sensor-icon"><i data-lucide="upload" style="width:22px;height:22px;stroke:var(--blue-2);stroke-width:1.6"></i></span>
-              <div class="sensor-name">Importar RR</div>
-              <div class="sensor-tag good">Sin sensor</div>
+            <div class="rpanel" id="rtab-results" role="tabpanel"></div>
+            <div class="rpanel" id="rtab-interp" role="tabpanel" hidden></div>
+            <div class="rpanel" id="rtab-recs" role="tabpanel" hidden></div>
+            <div class="actions actions-res">
+              <button class="btn btn-primary" type="button" id="btnSave"><svg class="ic" aria-hidden="true"><use href="/static/icons/sprite.svg#i-save"/></svg>Guardar sesión</button>
+              <button class="btn btn-soft" type="button" data-act="repeat"><svg class="ic" aria-hidden="true"><use href="/static/icons/sprite.svg#i-rotate-ccw"/></svg>Repetir medición</button>
+              <button class="btn btn-ghost" type="button" data-act="goto-history"><svg class="ic" aria-hidden="true"><use href="/static/icons/sprite.svg#i-history"/></svg>Ver historial</button>
             </div>
           </div>
+        </section>
+      </section>
 
-          <div class="guide-box" id="guideBox">Apoyá el codo. Cubrí el lente y el flash con el dedo índice.</div>
-
-          <div id="rrUploadWrap" style="display:none">
-            <label class="file-drop">
-              <input type="file" id="rrFile" accept=".csv,.json">
-              <i data-lucide="file-up" style="width:22px;height:22px;display:block;margin:0 auto 8px;opacity:0.5"></i>
-              <span id="rrFileLabel">Tocá para cargar CSV / JSON</span>
-            </label>
-          </div>
-
-          <div class="section-label">
-            <i data-lucide="timer" style="width:11px;height:11px"></i>Duración
-          </div>
-          <div class="dur-row">
-            <button class="dur-btn" id="dur1" data-min="1" style="display:none">1 min</button>
-            <button class="dur-btn active" id="dur3" data-min="3">3 min</button>
-            <button class="dur-btn" id="dur5" data-min="5">5 min</button>
-          </div>
-
-          <div class="card">
-            <div class="card-head">
-              <span class="card-title">Monitor de señal</span>
-              <div class="quality-wrap">
-                <span id="qualityText">—</span>
-                <div class="quality-bar"><div class="quality-fill" id="qualityFill"></div></div>
-              </div>
-            </div>
-            <div class="card-body">
-              <div id="freqWarning" class="freq-warn"></div>
-              <div class="signal-canvas-wrap"><canvas id="signalChart"></canvas></div>
-            </div>
-          </div>
-
-          <div id="cameraCard">
-            <div class="section-label" id="mediaTitle" style="margin-bottom:8px">
-              <i data-lucide="video" style="width:11px;height:11px"></i>Cámara PPG
-            </div>
-            <div class="video-wrap">
-              <video id="video" playsinline autoplay muted></video>
-              <canvas id="frameCanvas" style="display:none"></canvas>
-              <div class="video-overlay">
-                <div class="reticle"></div>
-                <div class="reticle-label">Mantener estable</div>
-              </div>
-            </div>
-            <div id="torchWrap" class="toggle-row" style="margin-top:13px">
-              <label class="toggle">
-                <input type="checkbox" id="torchToggle" checked>
-                <span class="toggle-track"></span>
-                <span class="toggle-thumb"></span>
-              </label>
-              <span>Flash automático</span>
-            </div>
-          </div>
-
-          <div class="action-grid">
-            <button class="btn btn-start" id="btnStart">
-              <i data-lucide="play" style="width:18px;height:18px;fill:currentColor;stroke:none"></i>
-              Iniciar
-            </button>
-            <button class="btn btn-stop" id="btnStop" disabled>
-              <i data-lucide="square" style="width:16px;height:16px;fill:currentColor;stroke:none"></i>
-              Detener
-            </button>
-            <button class="btn btn-save" id="btnSave" disabled>
-              <i data-lucide="save" style="width:15px;height:15px"></i>
-              Guardar
-            </button>
-          </div>
-
-          <div style="height:16px"></div>
+      <!-- ═════════ HISTORIAL ═════════ -->
+      <section id="view-history" class="view" aria-labelledby="historyTitle">
+        <header class="page-head"><h1 id="historyTitle">Historial</h1><p class="muted">Consultá mediciones anteriores, mirá la evolución y comparalas.</p></header>
+        <form class="card search" id="histForm" role="search">
+          <div class="field"><label for="histId">Identificador del paciente</label>
+            <div class="search-row"><input id="histId" class="input" type="text" autocomplete="off" placeholder="Ej: A-102"/><button class="btn btn-primary" type="submit"><svg class="ic" aria-hidden="true"><use href="/static/icons/sprite.svg#i-search"/></svg>Buscar</button></div></div>
+        </form>
+        <div id="histState"><div class="empty-state card"><svg class="ic ic-xl" aria-hidden="true"><use href="/static/icons/sprite.svg#i-clock"/></svg><h3>Buscá un paciente</h3><p>Ingresá su identificador para ver las sesiones guardadas.</p></div></div>
+        <div id="histBody" hidden>
+          <div class="hist-bar"><div class="seg" role="group" aria-label="Período">
+            <button type="button" class="seg-btn" data-range="7" aria-pressed="false">7 días</button>
+            <button type="button" class="seg-btn" data-range="30" aria-pressed="true">30 días</button>
+            <button type="button" class="seg-btn" data-range="90" aria-pressed="false">90 días</button>
+            <button type="button" class="seg-btn" data-range="0" aria-pressed="false">Todo</button></div>
+            <p class="muted" id="histCount" aria-live="polite"></p></div>
+          <section aria-label="Evolución"><div class="chart-cards" id="histCharts"></div></section>
+          <section class="card" aria-labelledby="sesT"><div class="card-head"><h2 id="sesT">Sesiones</h2></div><div id="histList"></div></section>
+          <section class="card" aria-labelledby="cmpT"><div class="card-head"><h2 id="cmpT">Comparar dos sesiones</h2></div><div id="histCompare"></div></section>
         </div>
-      </div>
+      </section>
 
-      <!-- ══════════════════════════════
-           RESULTADOS
-      ══════════════════════════════ -->
-      <div class="tab-panel" id="tabResultados">
-        <div class="panel-body">
-
-          <div class="sem-hero funcional" id="semHero">
-            <div class="sem-top">
-              <div class="sem-icon-wrap" id="semIcon">●</div>
-              <div class="sem-rmssd-wrap">
-                <div class="sem-rmssd-val" id="semRmssdVal">—</div>
-                <div class="sem-rmssd-lbl">RMSSD ms</div>
-              </div>
-            </div>
-            <div class="sem-label" id="semLabel">—</div>
-            <div class="sem-desc"  id="semDesc">Realizá una medición para ver el diagnóstico.</div>
-            <div class="norm-bar-wrap" id="normBarWrap" style="display:none">
-              <span id="normLow"  class="norm-edge">—</span>
-              <div class="norm-bar"><div class="norm-marker" id="normMarker" style="left:50%"></div></div>
-              <span id="normHigh" class="norm-edge">—</span>
-            </div>
-          </div>
-
-          <div id="stressTypeWrap" style="display:none"></div>
-
-          <div class="section-label">
-            <i data-lucide="gauge" style="width:11px;height:11px"></i>Cargas autonómicas
-          </div>
-          <div class="cargas-grid" id="cargasGrid">
-            <div class="empty" style="grid-column:1/-1">Esperando medición…</div>
-          </div>
-
-          <div class="section-label">
-            <i data-lucide="bar-chart-2" style="width:11px;height:11px"></i>Métricas rápidas
-          </div>
-          <div class="metrics-scroll" id="metricsGrid">
-            <div class="empty">—</div>
-          </div>
-
-          <div class="section-label">
-            <i data-lucide="clipboard-list" style="width:11px;height:11px"></i>Plan de intervención
-          </div>
-          <div id="planList"><div class="empty">—</div></div>
-
-          <div class="section-label">
-            <i data-lucide="dna" style="width:11px;height:11px"></i>Biomarcadores HRV
-          </div>
-          <div style="overflow-x:auto">
-            <div id="bioTableWrap"><div class="empty">—</div></div>
-          </div>
-
-          <button class="btn btn-save-full" id="btnSave2">
-            <i data-lucide="save" style="width:16px;height:16px"></i>
-            Guardar sesión
-          </button>
-
-          <div style="height:16px"></div>
-        </div>
-      </div>
-
-      <!-- ══════════════════════════════
-           HISTORIAL
-      ══════════════════════════════ -->
-      <div class="tab-panel" id="tabHistorial">
-        <div class="panel-body">
-
-          <div class="hist-search-row">
-            <div class="hist-input-wrap">
-              <i data-lucide="search" style="width:15px;height:15px;color:var(--text-3);flex-shrink:0"></i>
-              <input id="histDni" class="hist-input" type="text" placeholder="Buscar por DNI / ID…"/>
-            </div>
-            <button class="btn-search" id="btnHistSearch">
-              <i data-lucide="arrow-right" style="width:16px;height:16px"></i>
-            </button>
-          </div>
-
-          <div class="range-row">
-            <button class="range-btn active" data-range="7">Semana</button>
-            <button class="range-btn" data-range="30">Mes</button>
-            <button class="range-btn" data-range="90">3 Meses</button>
-          </div>
-
-          <div class="chart-card">
-            <div class="chart-card-head">
-              <span class="chart-title">RMSSD</span>
-              <span class="chart-unit">ms · variabilidad cardíaca</span>
-            </div>
-            <div class="chart-wrap"><canvas id="chartRmssd"></canvas></div>
-          </div>
-
-          <div class="chart-card">
-            <div class="chart-card-head">
-              <span class="chart-title">Cargas autonómicas</span>
-              <span class="chart-unit">0–100</span>
-            </div>
-            <div class="chart-wrap"><canvas id="chartCargas"></canvas></div>
-          </div>
-
-          <div class="chart-card">
-            <div class="chart-card-head">
-              <span class="chart-title">Balance PNS / SNS</span>
-              <span class="chart-unit">% potencia espectral</span>
-            </div>
-            <div class="chart-wrap"><canvas id="chartBalance"></canvas></div>
-          </div>
-
-          <div class="section-label">
-            <i data-lucide="list" style="width:11px;height:11px"></i>Sesiones recientes
-          </div>
-          <div id="histList">
-            <div class="hist-empty">
-              <i data-lucide="clock" style="width:34px;height:34px;opacity:0.25;display:block;margin:0 auto 10px"></i>
-              <p>Buscá un paciente para ver su historial</p>
-            </div>
-          </div>
-
-          <div style="height:16px"></div>
-        </div>
-      </div>
-
-      <!-- ══════════════════════════════
-           RECOMENDACIONES
-      ══════════════════════════════ -->
-      <div class="tab-panel" id="tabRecs">
-        <div class="panel-body">
-
-          <div class="recs-header">
-            <div class="recs-title">Plan integral</div>
-            <div class="recs-sub">Basado en tu última medición HRV</div>
-          </div>
-
-          <div id="recsWrap">
-            <div class="hist-empty">
-              <i data-lucide="sparkles" style="width:38px;height:38px;opacity:0.25;display:block;margin:0 auto 12px"></i>
-              <p>Realizá una medición para ver<br>tus recomendaciones personalizadas</p>
-            </div>
-          </div>
-
-          <div style="height:16px"></div>
-        </div>
-      </div>
-
-    </div><!-- /tabContent -->
-  </div><!-- /main-col -->
-
-</div><!-- /app -->
-
-<!-- COUNTDOWN -->
-<div id="countdownOverlay">
-  <div class="countdown-box">
-    <div class="cd-title" id="cdTitle">Preparación</div>
-    <div class="cd-text"  id="cdText">—</div>
-    <div class="cd-n"     id="cdN">5</div>
-    <div class="cd-hint"  id="cdHint">No bloquees la pantalla.</div>
+    </main>
   </div>
 </div>
 
-<!-- SHIMS para main.js (usa estas IDs para navegar) -->
-<div id="screenSensor"  style="display:none" aria-hidden="true"></div>
-<div id="screenResults" style="display:none" aria-hidden="true"></div>
-<!-- btnBack lo usa main.js para volver -->
-<button id="btnBack" style="display:none" aria-hidden="true"></button>
+<!-- Cuenta regresiva -->
+<div id="countdown" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="cdTitle">
+  <div class="overlay-box"><h2 id="cdTitle">Preparación</h2><p id="cdText"></p><div class="cd-n" id="cdN" aria-live="assertive">5</div><p class="hint" id="cdHint"></p>
+    <button class="btn btn-ghost" type="button" id="cdCancel">Cancelar</button></div>
+</div>
 
-<script src="/static/js/main.js"></script>
+<dialog id="dlg" aria-labelledby="dlgTitle"><h2 id="dlgTitle"></h2><p id="dlgBody"></p>
+  <div class="actions"><button class="btn btn-ghost" type="button" id="dlgCancel">Cancelar</button><button class="btn btn-primary" type="button" id="dlgOk">Continuar</button></div></dialog>
+
+<div id="toasts" class="toasts" aria-live="polite"></div>
+
+<script src="/static/vendor/chart.umd.js"></script>
 <script src="/static/js/hrv_validator.js"></script>
-<script>
-/* ═══════════════════════════════════════════════
-   HBA NAV CONTROLLER v4 — Light / Premium
-   — Tab routing
-   — Gauge sin aguja (arco + valor central)
-   — History charts (Chart.js, tema claro)
-   — Home metrics live update
-═══════════════════════════════════════════════ */
-
-// ── Tab labels ────────────────────────────────
-const TAB_LABELS = {
-  tabHome:"Heart Rate Variability", tabMedir:"Nueva medición",
-  tabResultados:"Resultados", tabHistorial:"Historial", tabRecs:"Recomendaciones"
-};
-
-function switchTab(id){
-  if(!id) return;
-  document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));
-  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
-  const panel=document.getElementById(id);
-  if(panel){ panel.classList.add("active"); }
-  const btn=document.querySelector(`[data-tab="${id}"]`);
-  if(btn){ btn.classList.add("active"); }
-  document.getElementById("topbarSub").textContent=TAB_LABELS[id]||"HBA";
-  document.getElementById("tabContent").scrollTo(0,0);
-  if(id==="tabHistorial") setTimeout(ensureCharts,60);
-}
-
-document.querySelectorAll(".nav-btn").forEach(b=>{
-  b.addEventListener("click",()=>switchTab(b.dataset.tab));
-});
-document.getElementById("btnGoMedir")?.addEventListener("click",()=>switchTab("tabMedir"));
-// main.js llama showScreen("screenSensor") o showScreen("screenResults")
-window.showScreen = function(screenId){
-  if(screenId==="screenSensor")  switchTab("tabMedir");
-  if(screenId==="screenResults") switchTab("tabResultados");
-};
-// btnBack de main.js → home
-document.getElementById("btnBack")?.addEventListener("click",()=>switchTab("tabHome"));
-// btnSave2 remap
-document.getElementById("btnSave2")?.addEventListener("click",()=>{
-  document.getElementById("btnSave")?.click();
-});
-
-// ── Gauge (sin aguja: arco fijo + zona + valor central) ──
-const ZONE_MAP   ={optimo:"ÓPTIMO",funcional:"NORMAL",comprometido:"BAJO",critico:"MUY BAJO"};
-function setGauge(rmssd, stateKey){
-  const gv=document.getElementById("gaugeValue");
-  if(gv) gv.textContent=rmssd!=null?(+rmssd).toFixed(1):"—";
-  const gz=document.getElementById("gaugeZone");
-  if(gz) gz.textContent=ZONE_MAP[stateKey]||"NORMAL";
-  const gs=document.getElementById("gaugeState");
-  if(gs){
-    gs.textContent=ZONE_MAP[stateKey]||(rmssd?"NORMAL":"Sin medición");
-    gs.className="gauge-state "+(stateKey||"");
-  }
-  const gd=document.getElementById("gaugeDesc");
-  if(gd && rmssd!=null) gd.textContent="Último registro de tu variabilidad cardíaca.";
-}
-
-// ── Home metrics ──────────────────────────────
-function updateHome(m){
-  if(!m) return;
-  const f=(v,d=1)=>(v!=null&&isFinite(+v))?(+v).toFixed(d):"—";
-  const $ =id=>document.getElementById(id);
-  $("hmFc")   .textContent=f(m.hr_mean,0);
-  $("hmRmssd").textContent=f(m.rmssd_corr??m.rmssd,1);
-  $("hmDfa")  .textContent=f(m.dfa_alpha1,2);
-  const lf=+(m.lf_power||0), hf=+(m.hf_power||0), tot=lf+hf||1;
-  const pPct=Math.round(hf/tot*100), sPct=Math.round(lf/tot*100);
-  $("hmPns").textContent=pPct;
-  $("pnsVal").textContent=pPct+"%"; $("snsVal").textContent=sPct+"%";
-  const pFill=$("pnsFill"), sFill=$("snsFill");
-  if(pFill) pFill.style.width=pPct+"%";
-  if(sFill) sFill.style.width=sPct+"%";
-  const dash=m.hba_dashboard;
-  if(dash?.semaphore){
-    const sem=dash.semaphore;
-    setGauge(m.rmssd_corr??m.rmssd, sem.key);
-    const mini=$("semMini");
-    if(mini){
-      mini.style.display="flex";
-      mini.className="sem-mini "+(sem.key||"");
-      $("semMiniIcon").textContent=sem.icon||"●";
-      $("semMiniLabel").textContent=sem.label||"—";
-      $("semMiniDesc").textContent=sem.description||"";
-    }
-  }
-}
-// Poll G.lastMetrics (set by main.js after compute)
-let _lastRef=null;
-setInterval(()=>{
-  if(window.G?.lastMetrics&&window.G.lastMetrics!==_lastRef){
-    _lastRef=window.G.lastMetrics; updateHome(window.G.lastMetrics);
-    // Auto-navegar a resultados cuando llegan datos
-    switchTab("tabResultados");
-  }
-},400);
-
-// ── History charts (tema claro) ───────────────
-let cRmssd=null,cCargas=null,cBal=null;
-
-const CHOPT={
-  responsive:true,maintainAspectRatio:false,
-  plugins:{legend:{display:false},tooltip:{
-    backgroundColor:"rgba(17,24,39,0.92)",
-    borderColor:"rgba(255,255,255,0.08)",borderWidth:1,
-    titleColor:"#F8FAFD",bodyColor:"#c6cedb",padding:10,cornerRadius:10,
-    titleFont:{family:"'Inter',sans-serif",size:11,weight:"600"},
-    bodyFont:{family:"'Inter',sans-serif",size:11},
-  }},
-  scales:{
-    x:{grid:{color:"rgba(17,24,39,0.05)"},
-       ticks:{color:"#94A3B8",font:{family:"'Inter',sans-serif",size:10},maxRotation:45}},
-    y:{grid:{color:"rgba(17,24,39,0.05)"},
-       ticks:{color:"#94A3B8",font:{family:"'Inter',sans-serif",size:10}}}
-  }
-};
-
-function ensureCharts(){
-  const g=(id)=>document.getElementById(id)?.getContext("2d");
-  if(!cRmssd && g("chartRmssd")){
-    cRmssd=new Chart(g("chartRmssd"),{type:"line",data:{labels:[],datasets:[{
-      label:"RMSSD",data:[],
-      borderColor:"#1677FF",borderWidth:2.5,pointRadius:4,tension:0.4,
-      pointBackgroundColor:"#1677FF",pointBorderColor:"#fff",pointBorderWidth:2,
-      fill:true,backgroundColor:"rgba(22,119,255,0.08)"
-    }]},options:{...CHOPT}});
-  }
-  if(!cCargas && g("chartCargas")){
-    cCargas=new Chart(g("chartCargas"),{type:"bar",data:{labels:[],datasets:[
-      {label:"Autonómica",data:[],backgroundColor:"rgba(29,184,142,0.8)",borderRadius:4,borderSkipped:false},
-      {label:"Emocional", data:[],backgroundColor:"rgba(22,119,255,0.8)",borderRadius:4,borderSkipped:false},
-      {label:"Física",    data:[],backgroundColor:"rgba(255,122,48,0.8)",borderRadius:4,borderSkipped:false},
-      {label:"Estrés",    data:[],backgroundColor:"rgba(255,90,84,0.8)", borderRadius:4,borderSkipped:false},
-    ]},options:{...CHOPT,plugins:{...CHOPT.plugins,legend:{display:true,
-      labels:{color:"#5E6B82",boxWidth:10,padding:12,
-              font:{family:"'Inter',sans-serif",size:10}}}}}});
-  }
-  if(!cBal && g("chartBalance")){
-    cBal=new Chart(g("chartBalance"),{type:"line",data:{labels:[],datasets:[
-      {label:"PNS",data:[],borderColor:"#1677FF",borderWidth:2,pointRadius:3,tension:0.4,fill:false},
-      {label:"SNS",data:[],borderColor:"#FF7A30", borderWidth:2,pointRadius:3,tension:0.4,fill:false},
-    ]},options:{...CHOPT,plugins:{...CHOPT.plugins,legend:{display:true,
-      labels:{color:"#5E6B82",boxWidth:10,padding:12,
-              font:{family:"'Inter',sans-serif",size:10}}}}}});
-  }
-}
-
-function loadHistory(rows){
-  if(!rows?.length) return;
-  const fmt=ts=>{const d=new Date(ts);return`${d.getDate()}/${d.getMonth()+1}`;};
-  const rev=[...rows].reverse();
-  const labels=rev.map(r=>fmt(r.timestamp_utc));
-  ensureCharts();
-  if(cRmssd){ cRmssd.data.labels=labels; cRmssd.data.datasets[0].data=rev.map(r=>r.rmssd_corr??r.rmssd); cRmssd.update(); }
-  if(cCargas){ cCargas.data.labels=labels;
-    cCargas.data.datasets[0].data=rev.map(r=>r.carga_autonomica);
-    cCargas.data.datasets[1].data=rev.map(r=>r.carga_emocional);
-    cCargas.data.datasets[2].data=rev.map(r=>r.carga_fisica);
-    cCargas.data.datasets[3].data=rev.map(r=>r.estres);
-    cCargas.update(); }
-  if(cBal){ cBal.data.labels=labels;
-    cBal.data.datasets[0].data=rev.map(r=>r.hf_power?Math.round(r.hf_power/(r.lf_power+r.hf_power||1)*100):null);
-    cBal.data.datasets[1].data=rev.map(r=>r.lf_power?Math.round(r.lf_power/(r.lf_power+r.hf_power||1)*100):null);
-    cBal.update(); }
-  renderSessions(rows);
-}
-
-function renderSessions(rows){
-  const el=document.getElementById("histList");if(!el)return;
-  if(!rows.length){
-    el.innerHTML=`<div class="hist-empty"><p>Sin sesiones registradas</p></div>`;return;
-  }
-  const colors={optimo:"var(--s-opt)",funcional:"var(--s-fun)",comprometido:"var(--s-com)",critico:"var(--s-cri)"};
-  el.innerHTML=rows.slice(0,30).map(r=>{
-    const d=new Date(r.timestamp_utc);
-    const dt=`${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
-    const col=colors[r.semaphore_key]||"var(--text-3)";
-    const rm=r.rmssd_corr??r.rmssd;
-    return`<div class="hist-item">
-      <div class="hist-dot" style="background:${col};box-shadow:0 0 8px ${col}40"></div>
-      <div class="hist-info">
-        <div class="hist-date">${dt}</div>
-        <div class="hist-state" style="color:${col}">${r.semaphore_label||"—"}</div>
-        <div class="hist-meta">${r.sensor_type||""} ${r.duration_minutes?`· ${r.duration_minutes} min`:""}</div>
-      </div>
-      <div class="hist-rmssd">
-        <span class="hist-rmssd-val">${rm!=null?(+rm).toFixed(1):"—"}</span>
-        <span class="hist-rmssd-lbl">ms</span>
-      </div>
-    </div>`;
-  }).join("");
-}
-
-document.getElementById("btnHistSearch")?.addEventListener("click",async()=>{
-  const pid=document.getElementById("histDni")?.value.trim();
-  if(!pid)return;
-  document.getElementById("histList").innerHTML=`<div class="hist-empty"><p>Cargando…</p></div>`;
-  try{
-    const r=await fetch(`/api/history?patient_id=${encodeURIComponent(pid)}`);
-    const j=await r.json();
-    loadHistory(j.data||[]);
-  }catch(e){
-    document.getElementById("histList").innerHTML=`<div class="hist-empty"><p>Error al cargar historial</p></div>`;
-  }
-});
-
-// Range filter (visual)
-document.querySelectorAll(".range-btn").forEach(b=>{
-  b.addEventListener("click",()=>{
-    document.querySelectorAll(".range-btn").forEach(x=>x.classList.remove("active"));
-    b.classList.add("active");
-  });
-});
-
-// ── Init ──────────────────────────────────────
-lucide.createIcons();
-</script>
+<script src="/static/js/core.js"></script>
+<script src="/static/js/sensors.js"></script>
+<script src="/static/js/results.js"></script>
+<script src="/static/js/history.js"></script>
+<script src="/static/js/main.js"></script>
 </body>
 </html>
