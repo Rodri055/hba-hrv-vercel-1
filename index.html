@@ -194,6 +194,11 @@
           <div id="resContent" hidden>
             <div id="valBanner"></div>
             <div id="resHero"></div>
+            <section class="report-cta" aria-labelledby="rptT">
+              <div class="rc-ic"><svg class="ic" aria-hidden="true"><use href="/static/icons/sprite.svg#i-file-text"/></svg></div>
+              <div class="rc-tx"><h3 id="rptT">Informe PDF profesional</h3><p>Resumen, gráficos, interpretación y plan de acción personalizado. <svg class="ic" aria-hidden="true"><use href="/static/icons/sprite.svg#i-lock"/></svg> Acceso protegido con contraseña.</p></div>
+              <button class="btn btn-hero" type="button" id="btnReport"><svg class="ic" aria-hidden="true"><use href="/static/icons/sprite.svg#i-download"/></svg>Generar informe PDF</button>
+            </section>
             <div class="tabs" role="tablist" aria-label="Secciones del resultado">
               <button class="tab" role="tab" type="button" data-rtab="results" aria-selected="true">Resultados</button>
               <button class="tab" role="tab" type="button" data-rtab="interp" aria-selected="false" tabindex="-1">Interpretación</button>
@@ -245,6 +250,27 @@
 <dialog id="dlg" aria-labelledby="dlgTitle"><h2 id="dlgTitle"></h2><p id="dlgBody"></p>
   <div class="actions"><button class="btn btn-ghost" type="button" id="dlgCancel">Cancelar</button><button class="btn btn-primary" type="button" id="dlgOk">Continuar</button></div></dialog>
 
+<dialog id="rptDlg" aria-labelledby="rptDlgT">
+  <form id="rptForm" novalidate>
+    <h2 id="rptDlgT">Informe PDF protegido</h2>
+    <p id="rptDlgP">Ingresá la contraseña para generar el informe. Se vuelve a pedir al recargar la página.</p>
+    <div class="field" style="margin-top:14px"><label for="rptPwd">Contraseña</label><input id="rptPwd" class="input" type="password" autocomplete="off" aria-describedby="rptErr"/><p class="err" id="rptErr" role="alert"></p></div>
+    <div class="actions"><button class="btn btn-ghost" type="button" id="rptCancel">Cancelar</button><button class="btn btn-primary" type="submit" id="rptGo">Generar informe</button></div>
+  </form>
+</dialog>
+<dialog id="rptView" class="dlg-wide" aria-labelledby="rvT">
+  <div class="rv-head"><h2 id="rvT">Informe listo</h2><button class="btn btn-ghost btn-sm" type="button" id="rvClose" aria-label="Cerrar"><svg class="ic" aria-hidden="true"><use href="/static/icons/sprite.svg#i-x"/></svg>Cerrar</button></div>
+  <p class="muted" id="rvInfo"></p>
+  <div class="rv-frame" id="rvFrameWrap"><iframe id="rvFrame" title="Vista previa del informe PDF"></iframe></div>
+  <p class="hint" id="rvNoPrev" hidden>Tu navegador no muestra la vista previa en esta pantalla: usá «Abrir» o «Descargar».</p>
+  <div class="actions rv-actions">
+    <button class="btn btn-primary" type="button" id="rvDownload"><svg class="ic" aria-hidden="true"><use href="/static/icons/sprite.svg#i-download"/></svg>Descargar PDF</button>
+    <button class="btn btn-soft" type="button" id="rvOpen"><svg class="ic" aria-hidden="true"><use href="/static/icons/sprite.svg#i-external-link"/></svg>Abrir</button>
+    <button class="btn btn-soft" type="button" id="rvPrint"><svg class="ic" aria-hidden="true"><use href="/static/icons/sprite.svg#i-printer"/></svg>Imprimir</button>
+    <button class="btn btn-ghost" type="button" id="rvRegen"><svg class="ic" aria-hidden="true"><use href="/static/icons/sprite.svg#i-refresh-cw"/></svg>Volver a generar</button>
+  </div>
+</dialog>
+
 <div id="toasts" class="toasts" aria-live="polite"></div>
 
 <script src="/static/vendor/chart.umd.js"></script>
@@ -254,5 +280,6 @@
 <script src="/static/js/results.js"></script>
 <script src="/static/js/history.js"></script>
 <script src="/static/js/main.js"></script>
+<script src="/static/js/report.js"></script>
 </body>
 </html>

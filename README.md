@@ -11,6 +11,25 @@ Backend Flask + NeuroKit2, frontend JS plano (sin build), despliegue en Vercel, 
 5. **Resultados** → indicadores, interpretación y recomendaciones (separados).
 6. **Historial** → evolución, filtro por período y comparación de dos sesiones.
 
+## Informe PDF (acceso protegido)
+Desde **Resultados** (botón *Generar informe PDF*) o desde cada sesión del **Historial** se genera un informe A4 de
+9 páginas: portada y resumen, resultados, gráficos, interpretación, plan de acción (2 págs.), evolución y conclusiones.
+
+**Acceso:** solo con contraseña, validada **en el servidor** (`POST /api/report`, cabecera `X-Report-Key`).
+1. En Vercel → *Settings → Environment Variables* creá **`REPORT_PASSWORD`** con la clave que quieras.
+2. Redeploy. Sin esa variable el informe queda **deshabilitado** (seguro por defecto).
+3. La app pide la clave al generar; se conserva solo en memoria hasta recargar la página.
+
+Privacidad: el PDF se genera en memoria y se entrega al navegador; no se guarda en disco ni en servicios externos.
+Los informes anteriores no se almacenan: se regeneran desde la sesión guardada en el historial.
+
+Para cobrar un arancel en lugar de (o además de) la contraseña, basta reemplazar la función `authorize()` de
+`hba_report/routes.py` (por ejemplo, verificando un pago o un token). El resto del módulo no cambia.
+
+Límites conocidos: el bloqueo por intentos fallidos es de mejor esfuerzo (en Vercel cada instancia tiene su propia
+memoria); usá una contraseña larga. Las demás rutas (`/api/compute`, `/api/save`, `/api/history`) mantienen su
+comportamiento original y no están protegidas.
+
 ## Ejecutar en local
 ```bash
 python -m venv .venv && source .venv/bin/activate     # Windows: .venv\Scripts\activate
@@ -32,6 +51,10 @@ Sin esas variables la app mide y calcula con normalidad; guardar e historial mue
 ```
 app.py                  rutas Flask: /, /api/compute, /api/save, /api/history
 api/hrv_core.py         algoritmos HRV (sin cambios de fórmulas)
+api/report.py           función Vercel del informe (delgada)
+hba_report/             módulo del informe: references.py (referencias), engine.py (interpretación),
+                        draw.py (gráficos vectoriales), pdf.py (maquetación), routes.py (acceso)
+tests/test_report.py    pruebas: python -m unittest discover -s tests -v
 index.html              marcado de la app
 static/css/style.css    sistema de diseño responsive (tokens, componentes, breakpoints)
 static/js/core.js       estado, utilidades, diálogos, contenido de cada método
@@ -42,6 +65,9 @@ static/js/main.js       navegación, flujo guiado, sesión de medición, API
 static/js/hrv_validator.js  validación fisiológica (umbrales originales)
 static/vendor|fonts|icons   Chart.js, tipografías e íconos locales (sin CDNs)
 ```
+
+## Licencias
+Tipografías Sora y Figtree (SIL Open Font License) incrustadas en el PDF. Chart.js (MIT). Íconos Lucide (ISC).
 
 ## Aviso
 La medición HRV es una herramienta de monitoreo y no constituye un diagnóstico médico.

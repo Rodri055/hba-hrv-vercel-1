@@ -174,5 +174,10 @@ def history():
         status=200, headers=CORS
     )
 
+# ── Informe PDF (acceso protegido por contraseña; ver hba_report/routes.py) ──
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from hba_report.routes import bp as report_bp
+app.register_blueprint(report_bp)
+
 if __name__ == "__main__":
     app.run(debug=True)
