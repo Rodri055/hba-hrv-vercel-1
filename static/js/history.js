@@ -81,14 +81,15 @@
   }
 
   function listHTML(rows) {
-    return `<div class="tbl-wrap"><table class="tbl tbl-hist"><thead><tr><th scope="col">Comparar</th><th scope="col">Fecha</th><th scope="col">Estado</th><th scope="col">RMSSD</th><th scope="col">FC media</th><th scope="col">Método</th></tr></thead><tbody>
+    return `<div class="tbl-wrap"><table class="tbl tbl-hist"><thead><tr><th scope="col">Comparar</th><th scope="col">Fecha</th><th scope="col">Estado</th><th scope="col">RMSSD</th><th scope="col">FC media</th><th scope="col">Método</th><th scope="col">Informe</th></tr></thead><tbody>
       ${rows.map((r) => { const id = String(r.id ?? r.timestamp_utc), on = H.picked.includes(id);
         return `<tr class="${on ? "is-picked" : ""}"><td data-label="Comparar"><label class="check"><input type="checkbox" data-pick="${esc(id)}" ${on ? "checked" : ""}><span>Elegir</span></label></td>
         <th scope="row" data-label="Fecha">${esc(fmtDate(r.timestamp_utc))}</th>
         <td data-label="Estado">${r.semaphore_label ? `<span class="chip chip-st">${esc(r.semaphore_label)}</span>` : '<span class="muted">—</span>'}</td>
         <td data-label="RMSSD"><span class="cell"><strong>${fmt(rm(r), 1)}</strong> <span class="u">ms</span></span></td>
         <td data-label="FC media"><span class="cell">${num(r.hr_mean) != null ? `<strong>${fmt(r.hr_mean, 0)}</strong> <span class="u">bpm</span>` : "—"}</span></td>
-        <td data-label="Método">${esc((SENSORS[r.sensor_type] || {}).label || r.sensor_type || "—")}${r.duration_minutes ? ` · ${esc(r.duration_minutes)} min` : ""}</td></tr>`; }).join("")}
+        <td data-label="Método">${esc((SENSORS[r.sensor_type] || {}).label || r.sensor_type || "—")}${r.duration_minutes ? ` · ${esc(r.duration_minutes)} min` : ""}</td>
+        <td data-label="Informe"><button type="button" class="btn btn-soft btn-sm" data-report="${esc(id)}" aria-label="Informe PDF de la sesión del ${esc(fmtDate(r.timestamp_utc))}">${ic("file-text")}PDF</button></td></tr>`; }).join("")}
       </tbody></table></div>`;
   }
 
@@ -128,5 +129,5 @@
 
   function onShow() { Object.values(H.charts).forEach((c) => c.resize()); }
 
-  window.HBA.history = { init, load, onShow, count: () => H.rows.length, pid: () => H.pid };
+  window.HBA.history = { init, load, onShow, count: () => H.rows.length, pid: () => H.pid, rows: () => H.rows.slice(), get: (id) => H.rows.find((r) => String(r.id ?? r.timestamp_utc) === String(id)) };
 })();
