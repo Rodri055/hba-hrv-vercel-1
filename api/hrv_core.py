@@ -174,7 +174,7 @@ def compute_hrv_from_nn(nn_ms, artifact_pct, duration_minutes=None, sensor_type=
         if duration_minutes and float(duration_minutes) < 5:
             freq_warning = f"Test {duration_minutes} min: LF/HF orientativo. Para análisis espectral completo usar 5 min."
     except: pass
-    return {
+    out = {
         "rmssd":rmssd,"rmssd_corr":rmssd_corr,"sdnn":sdnn,"lnrmssd":lnrmssd,"pnn50":pnn50,"mean_rr":mean_rr,
         "lf_power":lf,"hf_power":hf_v,"lf_hf":lfhf,"total_power":tp,
         "sd1":sd1,"sd2":sd2,"sd1_sd2_ratio":sd_ratio,"dfa_alpha1":dfa1,"baevsky":si,
@@ -184,6 +184,24 @@ def compute_hrv_from_nn(nn_ms, artifact_pct, duration_minutes=None, sensor_type=
         "n_nn":int(nn.size),"duration_correction":corr,
         "freq_warning":freq_warning,"sensor_type":sensor_type,"duration_minutes":duration_minutes,
     }
+    # Salida adicional (no altera ningún cálculo): intervalos NN ya corregidos, usados para los gráficos del informe.
+    out["nn_ms"] = [round(float(x), 1) for x in nn[:3000]]
+    return out
+
+def _ppg_view(sig, peaks, sr, seconds=12.0):
+    """Fragmento de la señal filtrada (solo para visualizar) con la ventana de latidos más regular y sus picos."""
+    win = int(seconds * sr)
+    if sig.size < win or peaks.size < 8: return None
+    best, best_score = 0, None
+    for start in range(0, sig.size - win + 1, max(1, int(2 * sr))):
+        p = peaks[(peaks >= start) & (peaks < start + win)]
+        if p.size < 8: continue
+        d = np.diff(p).astype(float); score = float(np.std(d) / (np.mean(d) + 1e-9))
+        if best_score is None or score < best_score: best, best_score = start, score
+    if best_score is None: return None
+    p = peaks[(peaks >= best) & (peaks < best + win)] - best
+    seg = sig[best:best + win]
+    return {"sr": float(sr), "samples": [round(float(v), 3) for v in seg], "peaks": [int(i) for i in p], "start_s": float(best / sr)}
 
 # ── Pipelines por sensor ──────────────────────────────────────
 
@@ -226,6 +244,8 @@ def compute_hrv_from_ppg(ppg, sampling_rate, duration_minutes=None, sensor_type=
     art = float(0.6*art_g+0.4*art_mad) if (np.isfinite(art_g) and np.isfinite(art_mad)) else (art_g if np.isfinite(art_g) else art_mad)
     result = compute_hrv_from_nn(nn, art, duration_minutes, sensor_type)
     result["n_peaks"] = int(peaks_idx.size); result["sampling_rate"] = sr
+    try: result["ppg_view"] = _ppg_view(ppg_f, peaks_idx, sr)
+    except Exception: result["ppg_view"] = None
     result["usable_ratio"] = float(usable) if np.isfinite(usable) else None
     try:
         rsp = nk.signal_filter(ppg_f, sampling_rate=sr, lowcut=0.1, highcut=0.4, method="butterworth", order=3)
