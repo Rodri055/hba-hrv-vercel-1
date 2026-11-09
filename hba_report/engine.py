@@ -1,5 +1,5 @@
 """
-HBA-HRV · report/engine.py
+HANNA · hba_report/engine.py
 Motor de interpretación. Recibe resultados REALES y devuelve un "modelo de informe" (dict) con todo lo que el
 generador de PDF necesita. No calcula HRV ni dibuja: separa la lógica clínica de la presentación.
 
@@ -95,6 +95,15 @@ def normalize_metrics(m):
     out["semaphore_label"] = sem.get("label") or m.get("semaphore_label")
     out["stress_type"] = dash.get("stress_type") or m.get("stress_type")
     out["freq_warning"] = m.get("freq_warning") or None
+    nn = [num(v) for v in (m.get("nn_ms") or [])[:3000]]
+    nn = [v for v in nn if v is not None and 250 <= v <= 2500]
+    out["nn_ms"] = nn if len(nn) >= 12 else []
+    pv = m.get("ppg_view")
+    out["ppg_view"] = None
+    if isinstance(pv, dict) and isinstance(pv.get("samples"), list) and isinstance(pv.get("peaks"), list) and num(pv.get("sr")):
+        smp = [num(v) for v in pv["samples"][:1500]]
+        if smp and all(v is not None for v in smp):
+            out["ppg_view"] = {"sr": float(pv["sr"]), "samples": smp, "peaks": [int(i) for i in pv["peaks"] if isinstance(i, (int, float)) and 0 <= i < len(smp)]}
     out["rmssd_main"] = out["rmssd_corr"] if out["rmssd_corr"] is not None else out["rmssd"]
     lf, hf = out["lf_power"], out["hf_power"]
     # Las potencias absolutas no se informan (su unidad no está verificada); se usa el reparto relativo.
@@ -226,7 +235,7 @@ def build_indicators(m, age, sex, conf, qual_level, dur, invalid=False):
         if key == "hf_share":
             extra = f"HF {es(value, 0)} % · LF {es(100 - value, 0)} %"
         if key == "hr_mean" and m["hr_min"] is not None and m["hr_max"] is not None:
-            extra = f"Mín–máx durante el registro: {es(m['hr_min'], 0)}–{es(m['hr_max'], 0)} bpm"
+            extra = f"Mín–máx durante el registro: {es(m['hr_min'], 0)}–{es(m['hr_max'], 0)} lpm"
         if invalid:
             state, color, bt = "invalid", "red", None
             meaning = "Valor no interpretable: la señal presenta inconsistencias técnicas."
@@ -270,11 +279,11 @@ def findings(ind, alerts, quality, m, dur, age):
     h = byk.get("hr_mean")
     if h and alerts["severity"] != "invalid":
         if h["state"] == "in":
-            out.append(("ok", f"La frecuencia cardíaca media ({h['text']} bpm) está dentro de la banda del protocolo."))
+            out.append(("ok", f"La frecuencia cardíaca media ({h['text']} lpm) está dentro de la banda del protocolo."))
         elif h["state"] == "high":
-            out.append(("attn", f"La frecuencia cardíaca media ({h['text']} bpm) es superior a 85 bpm; conviene repetir en reposo."))
+            out.append(("attn", f"La frecuencia cardíaca media ({h['text']} lpm) es superior a 85 lpm; conviene repetir en reposo."))
         else:
-            out.append(("info", f"La frecuencia cardíaca media ({h['text']} bpm) es inferior a 60 bpm; puede ser habitual con buen acondicionamiento."))
+            out.append(("info", f"La frecuencia cardíaca media ({h['text']} lpm) es inferior a 60 lpm; puede ser habitual con buen acondicionamiento."))
     s = byk.get("sdnn")
     if s and s["evidence"] and s["evidence"]["level"] != "insufficient" and alerts["severity"] != "invalid" and len(out) < 4:
         out.append(("ok" if s["state"] == "in" else "info", f"La variabilidad global (SDNN {s['text']} ms) " + ("está dentro de la banda del protocolo." if s["state"] == "in" else "está fuera de la banda del protocolo; se interpreta junto con el RMSSD.")))
@@ -293,7 +302,7 @@ def summary_text(ind, alerts, m, dur, method_label, when, age, sex):
         s.append(f"El indicador principal de variabilidad vagal (RMSSD) fue de {r['text']} ms y se ubica {pos} la referencia del protocolo para su perfil ({r['band_text']}).")
     h = byk.get("hr_mean")
     if h:
-        s.append(f"La frecuencia cardíaca media fue de {h['text']} bpm.")
+        s.append(f"La frecuencia cardíaca media fue de {h['text']} lpm.")
     if alerts["severity"] == "warn":
         s.append("Hubo advertencias técnicas en la señal, por lo que conviene interpretar con cautela.")
     if age is None:
@@ -351,7 +360,7 @@ def limitations(ind, m, dur, conf, conf_txt, age, n_hist, alerts=None):
         out.append("Es una única medición: describe un momento puntual y está influida por sueño, cafeína, estrés, postura y hora del día.")
     if age is None:
         out.append("Sin edad registrada, la referencia del RMSSD es general y menos precisa.")
-    out.append("Las bandas de referencia son umbrales operativos del protocolo HBA, no normas poblacionales; no existe un rango universal.")
+    out.append("Las bandas de referencia son umbrales operativos del protocolo HANNA, no normas poblacionales; no existe un rango universal.")
     have = {r["key"] for r in ind}
     miss = [R.INDICATORS[k]["short"] for k in ("sdnn", "lf_hf", "pnn50", "dfa_alpha1", "baevsky") if k not in have]
     if miss:
@@ -376,7 +385,7 @@ def build_plan(ind, alerts, quality, m, dur, conf, age, comorb, n_hist, now_loca
     if poor:
         focus = ("Obtener una medición confiable", "La calidad técnica de esta medición limita la interpretación. Antes de sacar conclusiones conviene repetirla en condiciones estandarizadas.")
     elif hr_flag:
-        focus = ("Contextualizar la frecuencia cardíaca con un profesional", f"La frecuencia cardíaca registrada ({es(hr, 0)} bpm) está fuera del rango habitual en reposo. Puede deberse a condiciones de la medición; se sugiere confirmarla y consultarla.")
+        focus = ("Contextualizar la frecuencia cardíaca con un profesional", f"La frecuencia cardíaca registrada ({es(hr, 0)} lpm) está fuera del rango habitual en reposo. Puede deberse a condiciones de la medición; se sugiere confirmarla y consultarla.")
     elif st("rmssd") == "low":
         focus = ("Favorecer la recuperación autonómica", "El RMSSD está por debajo de la referencia del protocolo para su perfil. El foco sugerido es el descanso, la regulación del estrés y un aumento gradual de la actividad.")
     elif st("lf_hf") == "high" or st("hr_mean") == "high":
@@ -384,9 +393,9 @@ def build_plan(ind, alerts, quality, m, dur, conf, age, comorb, n_hist, now_loca
     else:
         focus = ("Mantener hábitos y establecer una línea base", "Los indicadores con referencia disponibles no muestran alertas. El foco sugerido es sostener los hábitos y registrar mediciones comparables en el tiempo.")
     if not poor and stress_t.startswith("emocional"):
-        focus = (focus[0], focus[1] + " El protocolo HBA identificó predominio de carga emocional.")
+        focus = (focus[0], focus[1] + " El protocolo HANNA identificó predominio de carga emocional.")
     elif not poor and stress_t.startswith("fisico"):
-        focus = (focus[0], focus[1] + " El protocolo HBA identificó predominio de carga física.")
+        focus = (focus[0], focus[1] + " El protocolo HANNA identificó predominio de carga física.")
 
     if ex_caution:
         act = ["Caminatas suaves y movilidad, sin esfuerzos intensos hasta consultar con un profesional.", "Si aparecen mareos, dolor en el pecho o palpitaciones, suspender y consultar."]
@@ -446,13 +455,13 @@ def build_plan(ind, alerts, quality, m, dur, conf, age, comorb, n_hist, now_loca
 
 
 # ── evolución ────────────────────────────────────────────────────────────────────────────────────────────
-SERIES = [("rmssd", "RMSSD", "ms", 1), ("sdnn", "SDNN", "ms", 1), ("hr_mean", "Frecuencia cardíaca", "bpm", 0),
+SERIES = [("rmssd", "RMSSD", "ms", 1), ("sdnn", "SDNN", "ms", 1), ("hr_mean", "Frecuencia cardíaca", "lpm", 0),
           ("pnn50", "pNN50", "%", 1), ("lf_hf", "LF/HF", "", 2), ("lnrmssd", "lnRMSSD", "", 2), ("carga_autonomica", "Carga autonómica", "", 0)]
 
 
 def point_from_row(row, ts):
     n = normalize_metrics(row)
-    d = {"ts": ts, "sensor": n["sensor_type"], "dur": n["duration_minutes"], "rmssd": n["rmssd_main"]}
+    d = {"ts": ts, "sensor": n["sensor_type"], "dur": n["duration_minutes"], "rmssd": n["rmssd_main"], "quality": n["quality_score"]}
     for k, _, _, _ in SERIES[1:]:
         d[k] = (n["cargas"].get("carga_autonomica") or {}).get("value") if k == "carga_autonomica" else n.get(k)
     return d
@@ -486,7 +495,7 @@ def build_evolution(cur_pt, history, cur_ts, tz, age, sex):
     sensors = sorted({p["sensor"] for p in pts if p["sensor"]})
     durs = sorted({p["dur"] for p in pts if p["dur"]})
     band = band_for("rmssd", age, sex)
-    return {"n": len(pts), "series": series, "mixed_methods": len(sensors) > 1,
+    return {"pts": pts, "n": len(pts), "series": series, "mixed_methods": len(sensors) > 1,
             "methods": [R.SENSOR_LABEL[s] for s in sensors], "mixed_dur": len(durs) > 1, "rmssd_band": band,
             "baseline": len(pts) < 2 or not series}
 
@@ -558,7 +567,7 @@ def build_model(payload, now=None):
     model = {
         "patient": {"id": pid, "age": age, "sex": sex, "comorbidities": comorb, "notes": notes},
         "when": when, "when_dt": cur_ts, "tz": tz, "generated": fmt_dt(now, tz), "now_local": now_local,
-        "report_id": "HBA-" + hashlib.sha1(seed.encode()).hexdigest()[:8].upper(),
+        "report_id": "HANNA-" + hashlib.sha1(seed.encode()).hexdigest()[:8].upper(),
         "method": method, "sensor": sensor, "confidence": conf, "confidence_text": conf_txt,
         "duration": dur, "quality": quality, "alerts": alerts, "metrics": m, "indicators": ind,
         "rr": rr, "rr_count": len(rr),
@@ -571,4 +580,5 @@ def build_model(payload, now=None):
         "hba_label": m["semaphore_label"], "stress_type": m["stress_type"],
         "sources": R.SOURCES, "disclaimer": R.DISCLAIMER,
     }
-    return model
+    from .story import enrich
+    return enrich(model)

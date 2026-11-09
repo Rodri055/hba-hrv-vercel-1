@@ -1,11 +1,11 @@
 """
-HBA-HRV · report/references.py
+HANNA · hba_report/references.py
 Catálogo de indicadores y referencias del informe.
 
 PRINCIPIOS
 - Aquí NO se calcula nada: solo se describe cómo presentar e interpretar valores que ya calculó hrv_core.
 - Las bandas (band) replican exactamente las que usa hrv_core.enrich_dashboard (_hml). Son UMBRALES OPERATIVOS
-  DEL PROTOCOLO HBA, no normas poblacionales publicadas. El informe los rotula así.
+  DEL PROTOCOLO HANNA, no normas poblacionales publicadas. El informe los rotula así.
 - El RMSSD usa la tabla edad/sexo de hrv_core.rmssd_reference (misma fuente que la app).
 - No hay un rango universal: la literatura muestra amplia variabilidad interindividual y dependencia de la
   duración, la postura, el momento del día y el método de medición.
@@ -47,16 +47,16 @@ VALIDITY = {
 }
 
 # ── Indicadores ─────────────────────────────────────────────────────────────────────────────────────────────
-# band: (bajo, alto) del protocolo HBA | attn: lado que requiere atención contextual ("low"/"high"/None)
+# band: (bajo, alto) del protocolo HANNA | attn: lado que requiere atención contextual ("low"/"high"/None)
 # min_min: duración mínima preferible (min) para interpretar con solidez
 INDICATORS = {
     "hr_mean": dict(
-        name="Frecuencia cardíaca media", short="FC media", unit="bpm", dec=0, band=(60, 85), attn="high", min_min=1,
+        name="Frecuencia cardíaca media", short="FC media", unit="lpm", dec=0, band=(60, 85), attn="high", min_min=1,
         measures="Número promedio de latidos por minuto durante el registro.",
         meaning={
             "in": "Se ubica dentro de la banda de referencia del protocolo ({band}).",
-            "low": "Es inferior a 60 bpm. Puede ser habitual en personas con buen acondicionamiento físico; se interpreta junto con el contexto y los síntomas.",
-            "high": "Supera 85 bpm. Puede asociarse a activación, estrés, cafeína, movimiento previo, calor o fatiga; conviene repetir en reposo.",
+            "low": "Es inferior a 60 lpm. Puede ser habitual en personas con buen acondicionamiento físico; se interpreta junto con el contexto y los síntomas.",
+            "high": "Supera 85 lpm. Puede asociarse a activación, estrés, cafeína, movimiento previo, calor o fatiga; conviene repetir en reposo.",
         },
         follow="Medir siempre en reposo y a la misma hora para que los valores sean comparables.",
     ),
@@ -95,7 +95,7 @@ INDICATORS = {
     "pnn50": dict(
         name="pNN50", short="pNN50", unit="%", dec=1, band=None, attn=None, min_min=1,
         measures="Porcentaje de pares de latidos consecutivos que difieren en más de 50 ms; refleja actividad vagal.",
-        meaning={"none": "El protocolo HBA no define una banda para este indicador; se muestra sin clasificar y es útil para seguir su tendencia."},
+        meaning={"none": "El protocolo HANNA no define una banda para este indicador; se muestra sin clasificar y es útil para seguir su tendencia."},
         follow="Acompaña al RMSSD: ambos reflejan modulación vagal.",
     ),
     "hf_share": dict(
@@ -175,7 +175,7 @@ ORDER = ["hr_mean", "rmssd", "lnrmssd", "sdnn", "mean_rr", "pnn50", "hf_share", 
 # indicadores para el resumen visual de portada (en orden de prioridad)
 COVER_KPI = ["rmssd", "hr_mean", "sdnn", "lf_hf", "pnn50", "lnrmssd", "sd1"]
 
-# cargas compuestas del protocolo HBA (no son una norma publicada)
+# cargas compuestas del protocolo HANNA (no son una norma publicada)
 CARGAS = [("carga_autonomica", "Carga autonómica"), ("carga_emocional", "Carga emocional"),
           ("carga_fisica", "Carga física"), ("estres", "Estrés")]
 

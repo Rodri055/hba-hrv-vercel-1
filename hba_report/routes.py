@@ -1,5 +1,5 @@
 """
-HBA-HRV · report/routes.py
+HANNA · hba_report/routes.py
 Endpoints del informe PDF. ACCESO PROTEGIDO en el servidor:
 
   GET  /api/report/status  -> {"enabled": bool}              (no revela la contraseña)
