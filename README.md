@@ -12,8 +12,14 @@ Backend Flask + NeuroKit2, frontend JS plano (sin build), despliegue en Vercel, 
 6. **Historial** → evolución, filtro por período y comparación de dos sesiones.
 
 ## Informe PDF (acceso protegido)
-Desde **Resultados** (botón *Generar informe PDF*) o desde cada sesión del **Historial** se genera un informe A4 de
-9 páginas: portada y resumen, resultados, gráficos, interpretación, plan de acción (2 págs.), evolución y conclusiones.
+Desde **Resultados** (botón *Generar informe PDF*) o desde cada sesión del **Historial** se genera un informe HANNA de
+7 páginas A4, cada una con una pregunta: ¿Cómo estoy hoy? · ¿Qué mide cada cosa y dónde estoy? · Mapa RMSSD × FC ·
+¿De dónde salió el número? · Estrés y cargas · ¿Qué hago? · ¿Cómo vengo?
+
+Los gráficos (mapa 3×3, latidos con zonas de FC, señal con picos o tren de latidos, histograma, Poincaré, mapa de cargas,
+evolución) salen solo de datos reales. Si un dato falta, la sección lo declara. El backend devuelve ahora dos campos
+adicionales en `/api/compute` (`nn_ms` y `ppg_view`); no cambian ningún cálculo. Los informes de sesiones guardadas no
+incluyen los gráficos de latidos (el historial no guarda la serie).
 
 **Acceso:** solo con contraseña, validada **en el servidor** (`POST /api/report`, cabecera `X-Report-Key`).
 1. En Vercel → *Settings → Environment Variables* creá **`REPORT_PASSWORD`** con la clave que quieras.
@@ -53,7 +59,8 @@ app.py                  rutas Flask: /, /api/compute, /api/save, /api/history
 api/hrv_core.py         algoritmos HRV (sin cambios de fórmulas)
 api/report.py           función Vercel del informe (delgada)
 hba_report/             módulo del informe: references.py (referencias), engine.py (interpretación),
-                        draw.py (gráficos vectoriales), pdf.py (maquetación), routes.py (acceso)
+                        story.py (textos y datos de cada gráfico), draw.py (gráficos vectoriales),
+                        pdf.py (maquetación de las 7 páginas), routes.py (acceso)
 tests/test_report.py    pruebas: python -m unittest discover -s tests -v
 index.html              marcado de la app
 static/css/style.css    sistema de diseño responsive (tokens, componentes, breakpoints)
