@@ -1,5 +1,5 @@
 """
-HBA-HRV · report/draw.py
+HANNA · hba_report/draw.py
 Primitivas de dibujo vectorial (reportlab) para el informe: paleta, tipografía, íconos y gráficos.
 Todo es vectorial: se ve nítido al imprimir y al hacer zoom, y no depende de matplotlib.
 """
@@ -305,7 +305,7 @@ def icon_badge(c, name, cx, cy, r=13, bg=SKY, fg=HANNA):
 
 # ── marca ───────────────────────────────────────────────────────────────────────────────────────────────────
 def logo_mark(c, x, y, s=30, on_dark=False):
-    """Isotipo HBA-HRV: cuadrado redondeado con latido."""
+    """Isotipo HANNA: cuadrado redondeado con latido."""
     if on_dark:
         rrect(c, x, y, s, s, s * 0.28, fill=Color(1, 1, 1, alpha=0.16), stroke=Color(1, 1, 1, alpha=0.55), lw=0.9)
     else:
@@ -536,3 +536,299 @@ def histogram(c, x, y, w, h, rr, bins=12):
     text(c, f"{v0:.0f}", px, y + 3, F, 6.8, INK3, "l")
     text(c, f"{(v0 + v1) / 2:.0f} ms", px + pw / 2, y + 3, F, 6.8, INK3, "c")
     text(c, f"{v1:.0f}", px + pw, y + 3, F, 6.8, INK3, "r")
+
+
+# ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+# Gráficos del informe HANNA v2
+# ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+def fnum(v, d=1):
+    return f"{v:.{d}f}".replace(".", ",")
+
+
+def position_bar(c, x, y, w, value, band, attn, vmin, vmax, h=7):
+    """Barra con el rango de referencia sombreado (verde), el marcador del valor y los límites rotulados."""
+    band_strip(c, x, y, w, h, value, band, attn, vmin, vmax)
+    f = lambda v: x + w * (v - vmin) / (vmax - vmin)
+    for v in band:
+        lab = f"{v:g}"
+        text(c, lab, max(x + 6, min(x + w - 6, f(v))), y - 9, F, 6.6, INK3, "c")
+
+
+def _axis_frac(v, lo, hi):
+    """Posición 0..1 en un eje de 3 columnas iguales (bajo | en rango | alto); dentro de cada una es proporcional."""
+    W = hi - lo
+    amin = min(lo - 0.6 * W, v - 0.05 * W)
+    amax = max(hi + 0.6 * W, v + 0.05 * W)
+    cl = lambda f: min(max(f, 0.09), 0.91)
+    if v < lo:
+        return cl((v - amin) / (lo - amin)) / 3
+    if v > hi:
+        return 1 / 3 + 1 / 3 + cl((v - hi) / (amax - hi)) / 3
+    return 1 / 3 + cl((v - lo) / (hi - lo)) / 3
+
+
+def matrix_chart(c, x, y, w, h, mx, mini=False):
+    """Mapa 3x3: columnas = RMSSD (bajo | en rango | alto), filas = FC (alta arriba | en rango | baja abajo)."""
+    cw, ch = w / 3, h / 3
+    rm, hr = mx["rmssd"], mx["hr"]
+    xi = {"low": 0, "in": 1, "high": 2}[mx["x"]]
+    yi = {"high": 0, "in": 1, "low": 2}[mx["y"]]          # fila desde arriba
+    for r in range(3):
+        for k in range(3):
+            cx, cy = x + k * cw, y + (2 - r) * ch
+            fill = GREEN_T if (k == 1 and r == 1) else (WHITE if (k + r) % 2 else ICE)
+            rrect(c, cx + 1.2, cy + 1.2, cw - 2.4, ch - 2.4, 7 if not mini else 4, fill=fill, stroke=LINE, lw=0.6)
+    if not (xi == 1 and yi == 1):
+        pass
+    cx, cy = x + xi * cw, y + (2 - yi) * ch
+    rrect(c, cx + 1.2, cy + 1.2, cw - 2.4, ch - 2.4, 7 if not mini else 4, fill=SKY, stroke=HANNA, lw=2.2 if not mini else 1.6)
+    if not mini:
+        text(c, "rango del protocolo", x + cw * 1.5, y + ch * 1.5 + ch * 0.36, F, 6.6, GREEN_D, "c")
+    # ejes y rótulos
+    sx = 7.4 if not mini else 6.2
+    heads = [(f"RMSSD bajo", f"< {rm['lo']:g} ms"), ("RMSSD en rango", f"{rm['lo']:g}–{rm['hi']:g} ms"), ("RMSSD alto", f"> {rm['hi']:g} ms")]
+    for k, (a, b) in enumerate(heads):
+        text(c, a, x + k * cw + cw / 2, y - (11 if not mini else 8), FSB, sx, INK2, "c")
+        if not mini:
+            text(c, b, x + k * cw + cw / 2, y - 21, F, 7, INK3, "c")
+    rows = [("FC alta", f"> {hr['hi']:g} lpm"), ("FC en rango", f"{hr['lo']:g}–{hr['hi']:g} lpm"), ("FC baja", f"< {hr['lo']:g} lpm")]
+    for r, (a, b) in enumerate(rows):
+        yy = y + (2 - r) * ch + ch / 2
+        text(c, a, x - 6, yy + (2 if not mini else 1), FSB, sx, INK2, "r")
+        if not mini:
+            text(c, b, x - 6, yy - 8, F, 7, INK3, "r")
+    # posición exacta
+    px = x + w * _axis_frac(rm["v"], rm["lo"], rm["hi"])
+    fy = _axis_frac(hr["v"], hr["lo"], hr["hi"])           # 0 = abajo
+    py = y + h * fy
+    ex = {"low": x + cw, "in": None, "high": x + 2 * cw}[mx["x"]]
+    if ex is None:
+        ex = x + cw if (rm["v"] - rm["lo"]) <= (rm["hi"] - rm["v"]) else x + 2 * cw
+    ey = {"low": y + ch, "high": y + 2 * ch, "in": None}[mx["y"]]
+    if ey is None:
+        ey = y + ch if (hr["v"] - hr["lo"]) <= (hr["hi"] - hr["v"]) else y + 2 * ch
+    if not mini:
+        c.saveState()
+        c.setStrokeColor(DEEP)
+        c.setLineWidth(1.1)
+        c.setDash(3, 2.5)
+        c.line(px, py, ex, py)
+        c.line(px, py, px, ey)
+        c.restoreState()
+        for (a, b, c2, d) in [(ex, py - 3.5, ex, py + 3.5), (px - 3.5, ey, px + 3.5, ey)]:
+            c.saveState(); c.setStrokeColor(DEEP); c.setLineWidth(1.4); c.line(a, b, c2, d); c.restoreState()
+        dx = abs(rm["v"] - (rm["lo"] if ex <= x + cw + 0.1 else rm["hi"]))
+        dy = abs(hr["v"] - (hr["lo"] if ey <= y + ch + 0.1 else hr["hi"]))
+    # punto
+    for rad, col in [(11 if not mini else 6.5, Color(0.04, 0.17, 0.42, alpha=0.18)), (8.5 if not mini else 5, WHITE), (6 if not mini else 3.6, HANNA)]:
+        dot(c, px, py - (0 if rad > 6.5 else 0), rad, col)
+    if not mini:
+        def rel(v, lo, hi, d, u):
+            if v < lo: return f"{fnum(lo - v, d)} {u} bajo el límite"
+            if v > hi: return f"{fnum(v - hi, d)} {u} sobre el límite"
+            return f"a {fnum(min(v - lo, hi - v), d)} {u} del límite"
+        lab1 = f"RMSSD {fnum(rm['v'], 1)} ms · {rel(rm['v'], rm['lo'], rm['hi'], 1, 'ms')}"
+        lab2 = f"FC {fnum(hr['v'], 0)} lpm · {rel(hr['v'], hr['lo'], hr['hi'], 0, 'lpm')}"
+        bw_ = max(tw(lab1, FB, 7.8), tw(lab2, FB, 7.8)) + 16
+        bx = min(max(px - bw_ / 2, x + 4), x + w - bw_ - 4)
+        by = py + 16 if fy < 0.62 else py - 16 - 30
+        by = min(max(by, y + 4), y + h - 34)
+        rrect(c, bx, by, bw_, 30, 7, fill=DEEP)
+        text(c, lab1, bx + 8, by + 18, FB, 7.8, WHITE)
+        text(c, lab2, bx + 8, by + 7, FB, 7.8, CELESTE)
+
+
+ZONE_COL = {"low": CYAN, "in": GREEN, "high": AMBER}
+
+
+def tacogram(c, x, y, w, h, bt):
+    """Intervalos entre latidos (NN) en el tiempo, coloreados según la FC instantánea (60-85 lpm = rango del protocolo)."""
+    nn, t = bt["nn"], bt["t"]
+    ml, mr, mb, mt = 38, 38, 18, 6
+    px, py, pw, ph = x + ml, y + mb, w - ml - mr, h - mb - mt
+    vmin, vmax = min(min(nn), 706) - 40, max(max(nn), 1000) + 40
+    lo, hi, step = _nice(vmin, vmax, 4)
+    T = t[-1]
+    ys = lambda v: py + ph * (v - lo) / (hi - lo)
+    xs = lambda s: px + pw * s / T
+    c.saveState()
+    c.setFillColor(GREEN_T)
+    c.rect(px, ys(706.0), pw, ys(1000.0) - ys(706.0), stroke=0, fill=1)
+    c.restoreState()
+    v = lo
+    while v <= hi + 1e-6:
+        c.saveState(); c.setStrokeColor(LINE); c.setLineWidth(0.4); c.line(px, ys(v), px + pw, ys(v)); c.restoreState()
+        text(c, f"{v:.0f}", px - 4, ys(v) - 2.4, F, 6.8, INK3, "r")
+        v += step
+    for fc in (45, 50, 60, 70, 85, 100, 120):
+        rr = 60000.0 / fc
+        if lo < rr < hi:
+            text(c, f"{fc}", px + pw + 5, ys(rr) - 2.4, F, 6.8, INK3, "l")
+    text(c, "ms", px - 4, py + ph + 7, FB, 6.8, INK3, "r")
+    text(c, "lpm", px + pw + 5, py + ph + 7, FB, 6.8, INK3, "l")
+    c.saveState(); c.setStrokeColor(MID); c.setLineWidth(0.8); c.setLineJoin(1)
+    p = c.beginPath()
+    for i, (tt, v_) in enumerate(zip(t, nn)):
+        (p.moveTo if i == 0 else p.lineTo)(xs(tt), ys(v_))
+    c.drawPath(p, stroke=1, fill=0); c.restoreState()
+    for tt, v_ in zip(t, nn):
+        hrv = 60000.0 / v_
+        col = CYAN if hrv < 60 else (AMBER if hrv > 85 else GREEN)
+        dot(c, xs(tt), ys(v_), 2.1, col)
+    k = 0
+    while k <= T:
+        text(c, f"{k:.0f} s", xs(k), y + 4, F, 6.8, INK3, "c")
+        k += 30 if T > 100 else 10
+
+
+def ppg_trace(c, x, y, w, h, view):
+    sr, smp, pk = view["sr"], view["samples"], view["peaks"]
+    ml, mb, mt = 6, 16, 14
+    px, py, pw, ph = x + ml, y + mb, w - ml - 6, h - mb - mt
+    lo, hi = min(smp), max(smp)
+    pad = (hi - lo) * 0.12 or 1
+    lo, hi = lo - pad, hi + pad
+    T = len(smp) / sr
+    xs = lambda i: px + pw * i / (len(smp) - 1)
+    ys = lambda v: py + ph * (v - lo) / (hi - lo)
+    for k in range(0, int(T) + 1, 2):
+        xx = px + pw * k / T
+        c.saveState(); c.setStrokeColor(LINE); c.setLineWidth(0.4); c.line(xx, py, xx, py + ph); c.restoreState()
+        text(c, f"{k} s", xx, y + 4, F, 6.8, INK3, "c")
+    c.saveState(); c.setStrokeColor(HANNA); c.setLineWidth(1.4); c.setLineJoin(1)
+    p = c.beginPath()
+    for i, v in enumerate(smp):
+        (p.moveTo if i == 0 else p.lineTo)(xs(i), ys(v))
+    c.drawPath(p, stroke=1, fill=0); c.restoreState()
+    for j, i in enumerate(pk):
+        dot(c, xs(i), ys(smp[i]), 3.2, WHITE)
+        c.saveState(); c.setStrokeColor(DEEP); c.setLineWidth(1.4); c.circle(xs(i), ys(smp[i]), 3.2, stroke=1, fill=0); c.restoreState()
+        if j:
+            ms = (pk[j] - pk[j - 1]) / sr * 1000.0
+            text(c, f"{ms:.0f}", (xs(pk[j]) + xs(pk[j - 1])) / 2, py + ph + 3, FB, 6.6, DEEP, "c")
+
+
+def beat_train(c, x, y, w, h, bt):
+    """Tren de latidos reales (cada marca es un latido; la altura no es amplitud)."""
+    i0, i1 = bt["win"]
+    t, nn = bt["t"], bt["nn"]
+    base_t = t[i0] - nn[i0] / 1000.0
+    T = max(1.0, t[i1 - 1] - base_t)
+    ml, mb, mt = 6, 16, 16
+    px, pw = x + ml, w - ml - 6
+    ybase = y + mb + 6
+    top = y + h - mt
+    xs = lambda s: px + pw * (s - base_t) / T
+    c.saveState(); c.setStrokeColor(MID); c.setLineWidth(1); c.line(px, ybase, px + pw, ybase); c.restoreState()
+    for k in range(0, int(T) + 1, 2):
+        text(c, f"{k} s", px + pw * k / T, y + 3, F, 6.8, INK3, "c")
+    prev = None
+    for i in range(i0, i1):
+        xx = xs(t[i])
+        c.saveState(); c.setStrokeColor(HANNA); c.setLineWidth(2); c.setLineCap(1); c.line(xx, ybase, xx, top - 10); c.restoreState()
+        dot(c, xx, top - 10, 3.4, HANNA)
+        if prev is not None:
+            mid = (xx + prev) / 2
+            c.saveState(); c.setStrokeColor(MID); c.setLineWidth(0.7); c.line(prev, top - 2, xx, top - 2)
+            c.line(prev, top - 4.5, prev, top + 0.5); c.line(xx, top - 4.5, xx, top + 0.5); c.restoreState()
+            text(c, f"{nn[i]:.0f}", mid, top + 2.5, FB, 6.6, DEEP, "c")
+        prev = xx
+
+
+def quality_bar(c, x, y, w, h, valid_pct):
+    rrect(c, x, y, w, h, h / 2, fill=CELESTE)
+    rrect(c, x, y, max(h, w * valid_pct / 100.0), h, h / 2, fill=HANNA)
+
+
+LEVEL_COL = {"bajo": CELESTE, "moderado": MID, "alto": ELECTRIC, "muy alto": DEEP}
+
+
+def loads_map(c, x, y, s, phys, emo, auto, stress):
+    """Mapa X = carga física, Y = carga emocional (0-100). Tamaño = carga autonómica; anillo = nivel de estrés (si existe)."""
+    ml, mb = 30, 24
+    px, py, ps = x + ml, y + mb, s - ml - 8
+    f = lambda v: ps * v / 100.0
+    rrect(c, px, py, ps, ps, 6, fill=ICE, stroke=LINE, lw=0.6)
+    for a, b, col in [(0, 25, None), (25, 55, None), (55, 100, None)]:
+        pass
+    c.saveState(); c.setFillColor(Color(0.04, 0.36, 1, alpha=0.05)); c.rect(px + f(55), py, ps - f(55), ps, stroke=0, fill=1); c.rect(px, py + f(55), ps, ps - f(55), stroke=0, fill=1); c.restoreState()
+    for v in (25, 55):
+        c.saveState(); c.setStrokeColor(MID); c.setLineWidth(0.8); c.setDash(3, 3)
+        c.line(px + f(v), py, px + f(v), py + ps); c.line(px, py + f(v), px + ps, py + f(v)); c.restoreState()
+    for v in (0, 25, 55, 100):
+        text(c, f"{v}", px + f(v), y + 14, F, 6.8, INK3, "c")
+        text(c, f"{v}", px - 4, py + f(v) - 2.3, F, 6.8, INK3, "r")
+    text(c, "Carga física", px + ps / 2, y + 3, FSB, 7.6, INK2, "c")
+    c.saveState(); c.translate(x + 7, py + ps / 2); c.rotate(90); text(c, "Carga emocional", 0, 0, FSB, 7.6, INK2, "c"); c.restoreState()
+    cx, cy = px + f(phys), py + f(emo)
+    r = 9 + 17 * auto / 100.0
+    ring = LEVEL_COL.get(stress["level"]) if stress and stress.get("level") else None
+    dot(c, cx, cy, r + (5 if ring else 0), ring if ring else WHITE)
+    dot(c, cx, cy, r, HANNA)
+    dot(c, cx, cy, 2.4, WHITE)
+    return {"cx": cx, "cy": cy, "r": r}
+
+
+def hbar_levels(c, x, y, w, value):
+    """Barra 0-100 con cortes de nivel 25 / 55 / 78."""
+    rrect(c, x, y, w, 7, 3.5, fill=SKY)
+    rrect(c, x, y, max(7, w * value / 100.0), 7, 3.5, fill=HANNA)
+    for v in (25, 55, 78):
+        c.saveState(); c.setStrokeColor(WHITE); c.setLineWidth(1.4); c.line(x + w * v / 100, y - 1, x + w * v / 100, y + 8); c.restoreState()
+
+
+MARK = {"polar_h10": "o", "rr_upload": "o", "camera_ppg": "s", "face_rppg": "t", "vibration_scg": "t"}
+
+
+def marker(c, kind, x, y, r, fill, stroke=None):
+    c.saveState()
+    c.setFillColor(fill)
+    if stroke is not None:
+        c.setStrokeColor(stroke); c.setLineWidth(1.4)
+    if kind == "s":
+        c.rect(x - r, y - r, 2 * r, 2 * r, stroke=1 if stroke is not None else 0, fill=1)
+    elif kind == "t":
+        p = c.beginPath(); p.moveTo(x, y + r * 1.15); p.lineTo(x - r * 1.1, y - r * 0.8); p.lineTo(x + r * 1.1, y - r * 0.8); p.close()
+        c.drawPath(p, stroke=1 if stroke is not None else 0, fill=1)
+    else:
+        c.circle(x, y, r, stroke=1 if stroke is not None else 0, fill=1)
+    c.restoreState()
+
+
+def evo_chart(c, x, y, w, h, pts, fmt_x, dec=1, color=HANNA, band=None):
+    """Evolución con escala propia. pts: [(datetime, valor, sensor)]. Con menos de 3 puntos no se unen con línea."""
+    ml, mb, mt, mr = 34, 16, 8, 10
+    px, py, pw, ph = x + ml, y + mb, w - ml - mr, h - mb - mt
+    vals = [p[1] for p in pts]
+    v0, v1 = min(vals), max(vals)
+    if band:
+        v0, v1 = min(v0, band[0]), max(v1, band[1])
+    pad = (v1 - v0) * 0.18 or max(1.0, abs(v1) * 0.1)
+    lo, hi, step = _nice(v0 - pad, v1 + pad, 3)
+    ys = lambda v: py + ph * (v - lo) / (hi - lo)
+    t0, t1 = pts[0][0].timestamp(), pts[-1][0].timestamp()
+    xs = (lambda t: px + 14 + (pw - 28) * (t.timestamp() - t0) / (t1 - t0)) if t1 > t0 else (lambda t: px + pw / 2)
+    if band:
+        c.saveState(); c.setFillColor(GREEN_T)
+        c.rect(px, ys(max(lo, band[0])), pw, ys(min(hi, band[1])) - ys(max(lo, band[0])), stroke=0, fill=1); c.restoreState()
+    v = lo
+    while v <= hi + 1e-9:
+        c.saveState(); c.setStrokeColor(LINE); c.setLineWidth(0.5); c.line(px, ys(v), px + pw, ys(v)); c.restoreState()
+        text(c, f"{v:.{dec if step < 1 else 0}f}".replace(".", ","), px - 4, ys(v) - 2.4, F, 6.8, INK3, "r")
+        v += step
+    if len(pts) >= 3:
+        c.saveState(); c.setStrokeColor(color); c.setLineWidth(1.4); c.setLineJoin(1)
+        p = c.beginPath()
+        for i, (t, val, _) in enumerate(pts):
+            (p.moveTo if i == 0 else p.lineTo)(xs(t), ys(val))
+        c.drawPath(p, stroke=1, fill=0); c.restoreState()
+    for t, val, sensor in pts:
+        marker(c, MARK.get(sensor, "o"), xs(t), ys(val), 4.4, WHITE, color)
+        marker(c, MARK.get(sensor, "o"), xs(t), ys(val), 2.2, color)
+    for i, (t, val, _) in enumerate(pts):
+        if i in (0, len(pts) - 1) or len(pts) <= 4:
+            lab = f"{val:.{dec}f}".replace(".", ",")
+            text(c, lab, xs(t), ys(val) + 8, FB, 7.2, DEEP, "c")
+    for i, (t, _, _) in enumerate(pts):
+        if i in (0, len(pts) - 1) or len(pts) <= 4:
+            text(c, fmt_x(t), xs(t), y + 3, F, 6.8, INK3, "c")
