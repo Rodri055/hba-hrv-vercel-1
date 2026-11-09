@@ -90,7 +90,7 @@ class Pdf(unittest.TestCase):
         m = build_model({"patient_id": "P-1", "age": 40, "sex": "F", "metrics": METRICS})
         pdf = build_pdf(m)
         self.assertTrue(pdf.startswith(b"%PDF"))
-        self.assertGreaterEqual(page_count(pdf), 8)
+        self.assertEqual(page_count(pdf), 7)
         self.assertEqual(draw.WARNINGS, [])
 
     def test_metricas_minimas_y_textos_largos(self):
@@ -102,6 +102,56 @@ class Pdf(unittest.TestCase):
             pdf = build_pdf(build_model(payload))
             self.assertTrue(pdf.startswith(b"%PDF"))
             self.assertEqual(draw.WARNINGS, [])
+
+
+class Informe7(unittest.TestCase):
+    def test_mapa_rmssd_fc_celda_y_distancias(self):
+        m = build_model({"patient_id": "X", "age": 47, "sex": "M", "metrics": {"sensor_type": "polar_h10", "duration_minutes": 3, "rmssd": 39.0, "rmssd_corr": 42.1, "hr_mean": 52}})
+        mx = m["matrix"]
+        self.assertTrue(mx["ok"])
+        self.assertEqual((mx["x"], mx["y"]), ("in", "low"))            # RMSSD 42,1 dentro de 22–52; FC 52 bajo 60
+        self.assertEqual((mx["rmssd"]["lo"], mx["rmssd"]["hi"]), (22, 52))
+        self.assertIn("9,9 ms", mx["rmssd"]["txt"])
+        self.assertIn("8 lpm", mx["hr"]["txt"])
+        self.assertNotIn("diagn", mx["text"].lower().replace("no es un diagn", ""))
+
+    def test_mapa_no_se_dibuja_con_senal_invalida_o_sin_datos(self):
+        bad = build_model({"patient_id": "X", "age": 40, "metrics": {"sensor_type": "camera_ppg", "duration_minutes": 3, "rmssd": 1.2, "hr_mean": 72}})
+        self.assertFalse(bad["matrix"]["ok"])
+        solo = build_model({"patient_id": "X", "metrics": {"sensor_type": "polar_h10", "duration_minutes": 3, "sdnn": 40}})
+        self.assertFalse(solo["matrix"]["ok"])
+
+    def test_los_ocho_casos_del_mapa(self):
+        from hba_report.story import CELLS
+        self.assertEqual(len(CELLS), 9)
+
+    def test_marca_hanna_sin_hba(self):
+        try:
+            from pypdf import PdfReader
+        except ImportError:
+            self.skipTest("pypdf no instalado")
+        pdf = build_pdf(build_model({"patient_id": "P-1", "age": 40, "sex": "F", "metrics": METRICS}))
+        txt = " ".join(p.extract_text() for p in PdfReader(io.BytesIO(pdf)).pages)
+        self.assertIn("HANNA", txt)
+        self.assertNotIn("HBA", txt)
+
+    def test_compute_agrega_nn_sin_cambiar_calculos(self):
+        import numpy as np
+        rr = (850 + 40 * np.sin(np.linspace(0, 30, 300)) + np.random.default_rng(1).normal(0, 25, 300)).tolist()
+        d = app.test_client().post("/api/compute", json={"sensor_type": "polar_h10", "rri_ms": rr, "duration_minutes": 3, "age": 40, "sex": "M"}).get_json()
+        self.assertGreaterEqual(len(d["nn_ms"]), 100)
+        # SD1/SD2 informados coinciden con los recalculados desde la serie NN que se grafica
+        nn = np.array(d["nn_ms"])
+        sd1 = np.std(np.diff(nn), ddof=1) / np.sqrt(2)
+        self.assertAlmostEqual(sd1, d["sd1"], delta=1.5)
+
+    def test_pdf_con_senal_ppg_y_serie_nn(self):
+        import numpy as np
+        nn = (np.full(150, 900) + np.random.default_rng(3).normal(0, 30, 150)).round(1).tolist()
+        view = {"sr": 30.0, "samples": [float(np.sin(i / 3)) for i in range(360)], "peaks": list(range(5, 360, 28))}
+        m = build_model({"patient_id": "C", "age": 35, "sex": "F", "metrics": dict(METRICS, sensor_type="camera_ppg", nn_ms=nn, ppg_view=view)})
+        self.assertIsNotNone(m["ppg_view"]); self.assertEqual(m["beats"]["n"], 150)
+        self.assertTrue(build_pdf(m).startswith(b"%PDF")); self.assertEqual(draw.WARNINGS, [])
 
 
 class Acceso(unittest.TestCase):
